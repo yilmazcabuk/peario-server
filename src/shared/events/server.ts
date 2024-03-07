@@ -2,85 +2,90 @@ import { Client, User } from "..";
 import { Room } from "../room";
 
 type ServerEvent = {
-    type: string;
-    payload: object;
+  type: string;
+  payload: object;
 };
 
 class ReadyEvent implements ServerEvent {
-    type = 'ready';
-    payload: {
-        user: User
-    };
+  type = "ready";
 
-    constructor(user: User) {
-        this.payload = {
-            user
-        };
-    }
+  payload: {
+    user: User;
+  };
+
+  constructor(user: User) {
+    this.payload = {
+      user,
+    };
+  }
 }
 
 class UserEvent implements ServerEvent {
-    type = 'user';
-    payload: {
-        user: User
-    };
+  type = "user";
 
-    constructor(user: User) {
-        this.payload = {
-            user
-        };
-    }
+  payload: {
+    user: User;
+  };
+
+  constructor(user: User) {
+    this.payload = {
+      user,
+    };
+  }
 }
 
 class RoomEvent implements ServerEvent {
-    type = 'room';
-    payload: Room;
+  type = "room";
 
-    constructor(room: Room) {
-        this.payload = room;
-    }
+  payload: Room;
+
+  constructor(room: Room) {
+    this.payload = room;
+  }
 }
 
 class SyncEvent extends RoomEvent {
-    type = 'sync';
+  type = "sync";
 }
 
 class MessageEvent implements ServerEvent {
-    type = 'message';
-    payload: {
-        user: string;
-        content: string;
-        date: number;
-    }
+  type = "message";
 
-    constructor(sender: Client, content: string) {
-        this.payload = {
-            user: sender.id,
-            content: content.substring(0, 300),
-            date: Date.now()
-        };
-    }
+  payload: {
+    user: string;
+    content: string;
+    date: number;
+  };
+
+  constructor(sender: Client, content: string) {
+    this.payload = {
+      user: sender.id,
+      content: content.substring(0, 300),
+      date: Date.now(),
+    };
+  }
 }
 
 class ErrorEvent implements ServerEvent {
-    type = 'error';
-    payload: {
-        type: string
-    };
+  type = "error";
 
-    constructor(type: string) {
-        this.payload = {
-            type
-        };
-    }
+  payload: {
+    type: string;
+  };
+
+  constructor(type: string) {
+    this.payload = {
+      type,
+    };
+  }
 }
 
 export {
-    ServerEvent,
-    ReadyEvent,
-    UserEvent,
-    RoomEvent,
-    SyncEvent,
-    MessageEvent,
-    ErrorEvent
+  ServerEvent,
+  ReadyEvent,
+  UserEvent,
+  RoomEvent,
+  SyncEvent,
+  MessageEvent,
+  ErrorEvent,
 };

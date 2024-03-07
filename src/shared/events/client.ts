@@ -3,51 +3,51 @@ import Meta from "../meta";
 import Stream from "../stream";
 
 type ClientEvent = {
-    client: Client,
-    payload: object
+  client: Client;
+  payload: object;
 };
 
 interface ClientUserUpdate extends ClientEvent {
-    payload: {
-        username: string;
-    }
+  payload: {
+    username: string;
+  };
 }
 
 interface ClientNewRoom extends ClientEvent {
-    payload: {
-        meta: Meta;
-        stream: Stream;
-    }
+  payload: {
+    meta: Meta;
+    stream: Stream;
+  };
 }
 
 interface CientJoinRoom extends ClientEvent {
-    payload: {
-        id: string;
-    }
+  payload: {
+    id: string;
+  };
 }
 
 interface ClientMessage extends ClientEvent {
-    payload: {
-        content: string;
-    }
+  payload: {
+    content: string;
+  };
 }
 
 interface ClientUpdateOwnership extends ClientEvent {
-    payload: {
-        userId: string;
-    }
+  payload: {
+    userId: string;
+  };
 }
 
 interface ClientSync extends ClientEvent {
-    payload: Player;
+  payload: Player;
 }
 
 export {
-    ClientEvent,
-    ClientUserUpdate,
-    ClientNewRoom,
-    CientJoinRoom,
-    ClientMessage,
-    ClientUpdateOwnership,
-    ClientSync
-}
+  ClientEvent,
+  ClientUserUpdate,
+  ClientNewRoom,
+  CientJoinRoom,
+  ClientMessage,
+  ClientUpdateOwnership,
+  ClientSync,
+};
