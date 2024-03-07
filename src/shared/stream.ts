@@ -1,13 +1,15 @@
 class Stream {
-    url?: string;
-    infoHash?: string;
-    fileIdx?: number;
+  url?: string;
 
-    constructor(stream: any) {
-        this.url = stream.url;
-        this.infoHash = stream.infoHash;
-        this.fileIdx = stream.fileIdx;
-    }
-};
+  infoHash?: string;
+
+  fileIdx?: number;
+
+  constructor(stream: any) {
+    this.url = stream.url;
+    this.infoHash = stream.infoHash;
+    this.fileIdx = stream.fileIdx;
+  }
+}
 
 export default Stream;
