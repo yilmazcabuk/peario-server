@@ -1,4 +1,4 @@
-import { Client, User, Room, RoomOptions } from "./shared";
+import { Client, Room, RoomOptions, User } from "./shared";
 
 class RoomManager {
   public rooms: Room[];

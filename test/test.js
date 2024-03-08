@@ -51,8 +51,8 @@ function createClient(catchReady = true) {
       });
     else client.once("open", () => resolve(client));
 
-    client.createRoom = () => {
-      return new Promise((resolve) => {
+    client.createRoom = () =>
+      new Promise((resolve) => {
         client.once("event", (type, payload) => {
           if (type === "room") resolve(payload);
         });
@@ -62,10 +62,9 @@ function createClient(catchReady = true) {
           stream,
         });
       });
-    };
 
-    client.joinRoom = (id) => {
-      return new Promise((resolve) => {
+    client.joinRoom = (id) =>
+      new Promise((resolve) => {
         client.once("event", (type, payload) => {
           if (type === "sync") resolve(payload);
         });
@@ -74,7 +73,6 @@ function createClient(catchReady = true) {
           id,
         });
       });
-    };
   });
 }
 
@@ -88,11 +86,11 @@ describe("Client", function () {
     assert.strictEqual(Array.isArray(payload.users), true);
   }
 
-  before(function () {
-    return waitOn({
+  before(() =>
+    waitOn({
       resources: [`https://localhost:${PORT}`],
-    });
-  });
+    }),
+  );
 
   it("should return a ready event", (done) => {
     createClient(false).then((client) => {
@@ -222,7 +220,7 @@ describe("Client", function () {
     createClient().then((client) => {
       client.createRoom().then(({ id }) => {
         client.joinRoom(id).then(() => {
-          let content = "hello";
+          const content = "hello";
 
           client.once("event", (type, payload) => {
             assert.strictEqual(type, "message");

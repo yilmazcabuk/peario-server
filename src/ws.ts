@@ -2,7 +2,7 @@ import https from "https";
 import WebSocket from "ws";
 import { EventEmitter } from "events";
 import { Client, User } from "./shared";
-import { ServerEvent, ReadyEvent } from "./shared/events/server";
+import { ReadyEvent, ServerEvent } from "./shared/events/server";
 import { ClientEvent } from "./shared/events/client";
 
 class WS {
@@ -26,9 +26,9 @@ class WS {
     setInterval(
       () =>
         (this.clients = this.clients.filter(
-          (c) => new Date().getTime() - c.last_active < cleanInterval
+          (c) => new Date().getTime() - c.last_active < cleanInterval,
         )),
-      cleanInterval
+      cleanInterval,
     );
   }
 
