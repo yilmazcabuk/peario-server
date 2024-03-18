@@ -1,6 +1,5 @@
 import { EventEmitter } from "events";
 import https from "https";
-
 import WebSocket from "ws";
 
 import { Client, User } from "./shared";

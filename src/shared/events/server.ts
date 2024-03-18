@@ -81,11 +81,11 @@ class ErrorEvent implements ServerEvent {
 }
 
 export {
-  ServerEvent,
-  ReadyEvent,
-  UserEvent,
-  RoomEvent,
-  SyncEvent,
-  MessageEvent,
   ErrorEvent,
+  MessageEvent,
+  ReadyEvent,
+  RoomEvent,
+  ServerEvent,
+  SyncEvent,
+  UserEvent,
 };

@@ -5,4 +5,4 @@ import { Room, RoomOptions } from "./room";
 import Stream from "./stream";
 import User from "./user";
 
-export { User, Client, Player, Meta, Stream, Room, RoomOptions };
+export { Client, Meta, Player, Room, RoomOptions, Stream, User };

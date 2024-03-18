@@ -43,11 +43,11 @@ interface ClientSync extends ClientEvent {
 }
 
 export {
-  ClientEvent,
-  ClientUserUpdate,
-  ClientNewRoom,
   CientJoinRoom,
+  ClientEvent,
   ClientMessage,
-  ClientUpdateOwnership,
+  ClientNewRoom,
   ClientSync,
+  ClientUpdateOwnership,
+  ClientUserUpdate,
 };
