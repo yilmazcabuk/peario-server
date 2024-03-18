@@ -1,11 +1,15 @@
+import { config } from "dotenv";
+
+import WebSocket from "ws";
+
+import assert from "assert";
+
+import waitOn from "wait-on";
+
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-require("dotenv").config();
+config();
 
 const { PORT } = process.env;
-const assert = require("assert");
-const WebSocket = require("ws");
-const waitOn = require("wait-on");
-
 const serverUrl = `wss://localhost:${PORT}`;
 
 const meta = {
@@ -52,9 +56,9 @@ function createClient(catchReady = true) {
     else client.once("open", () => resolve(client));
 
     client.createRoom = () =>
-      new Promise((resolve) => {
+      new Promise((roomPromise) => {
         client.once("event", (type, payload) => {
-          if (type === "room") resolve(payload);
+          if (type === "room") roomPromise(payload);
         });
 
         client.sendEvent("room.new", {
@@ -64,9 +68,9 @@ function createClient(catchReady = true) {
       });
 
     client.joinRoom = (id) =>
-      new Promise((resolve) => {
+      new Promise((syncPromise) => {
         client.once("event", (type, payload) => {
-          if (type === "sync") resolve(payload);
+          if (type === "sync") syncPromise(payload);
         });
 
         client.sendEvent("room.join", {
