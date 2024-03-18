@@ -1,31 +1,32 @@
 import fs from "fs";
 import https from "https";
-import WS from "./ws";
+
 import {
-  PORT,
-  PEM_CERT,
-  PEM_KEY,
   INTERVAL_CLIENT_CHECK,
   INTERVAL_ROOM_UPDATE,
+  PEM_CERT,
+  PEM_KEY,
+  PORT,
 } from "./common/config";
-import {
-  ClientEvent,
-  ClientNewRoom,
-  CientJoinRoom,
-  ClientMessage,
-  ClientSync,
-  ClientUserUpdate,
-  ClientUpdateOwnership,
-} from "./shared/events/client";
-import {
-  RoomEvent,
-  SyncEvent,
-  MessageEvent,
-  ErrorEvent,
-  UserEvent,
-} from "./shared/events/server";
 import RoomManager from "./room";
 import { User } from "./shared";
+import {
+  CientJoinRoom,
+  ClientEvent,
+  ClientMessage,
+  ClientNewRoom,
+  ClientSync,
+  ClientUpdateOwnership,
+  ClientUserUpdate,
+} from "./shared/events/client";
+import {
+  ErrorEvent,
+  MessageEvent,
+  RoomEvent,
+  SyncEvent,
+  UserEvent,
+} from "./shared/events/server";
+import WS from "./ws";
 
 const server = https
   .createServer(

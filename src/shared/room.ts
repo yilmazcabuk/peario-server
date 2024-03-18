@@ -1,8 +1,9 @@
 import { v4 as uuidv4 } from "uuid";
-import User from "./user";
-import Stream from "./stream";
-import Player from "./player";
+
 import Meta from "./meta";
+import Player from "./player";
+import Stream from "./stream";
+import User from "./user";
 
 interface RoomOptions {
   meta: Meta;
