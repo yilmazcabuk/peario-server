@@ -2,49 +2,26 @@ import { Client, Player } from "..";
 import Meta from "../meta";
 import Stream from "../stream";
 
-type ClientEvent = {
+type ClientEvent<T = object> = {
   client: Client;
-  payload: object;
+  payload: T;
 };
 
-interface ClientUserUpdate extends ClientEvent {
-  payload: {
-    username: string;
-  };
-}
+interface ClientUserUpdate extends ClientEvent<{ username: string }> {}
 
-interface ClientNewRoom extends ClientEvent {
-  payload: {
-    meta: Meta;
-    stream: Stream;
-  };
-}
+interface ClientNewRoom extends ClientEvent<{ meta: Meta; stream: Stream }> {}
 
-interface CientJoinRoom extends ClientEvent {
-  payload: {
-    id: string;
-  };
-}
+interface ClientJoinRoom extends ClientEvent<{ id: string }> {}
 
-interface ClientMessage extends ClientEvent {
-  payload: {
-    content: string;
-  };
-}
+interface ClientMessage extends ClientEvent<{ content: string }> {}
 
-interface ClientUpdateOwnership extends ClientEvent {
-  payload: {
-    userId: string;
-  };
-}
+interface ClientUpdateOwnership extends ClientEvent<{ userId: string }> {}
 
-interface ClientSync extends ClientEvent {
-  payload: Player;
-}
+interface ClientSync extends ClientEvent<Player> {}
 
 export {
-  CientJoinRoom,
   ClientEvent,
+  ClientJoinRoom,
   ClientMessage,
   ClientNewRoom,
   ClientSync,

@@ -11,8 +11,8 @@ import {
 import RoomManager from "./room";
 import { User } from "./shared";
 import {
-  CientJoinRoom,
   ClientEvent,
+  ClientJoinRoom,
   ClientMessage,
   ClientNewRoom,
   ClientSync,
@@ -34,7 +34,7 @@ const server = https
       cert: fs.readFileSync(PEM_CERT),
       key: fs.readFileSync(PEM_KEY),
     },
-    (req, res) => {
+    (_, res) => {
       res.writeHead(200);
       res.end();
     },
@@ -45,14 +45,6 @@ console.log(`Listening on port ${PORT}`);
 
 const wss = new WS(server, INTERVAL_CLIENT_CHECK);
 const roomManager = new RoomManager();
-
-wss.events.on("user.update", updateUser);
-wss.events.on("room.new", createRoom);
-wss.events.on("room.join", joinRoom);
-wss.events.on("room.message", messageRoom);
-wss.events.on("room.updateOwnership", updateRoomOwnership);
-wss.events.on("player.sync", syncPlayer);
-wss.events.on("heartbeat", heartbeat);
 
 function updateUser({ client, payload }: ClientUserUpdate) {
   const { username } = payload;
@@ -76,7 +68,7 @@ function createRoom({ client, payload }: ClientNewRoom) {
   client.sendEvent(new RoomEvent(room));
 }
 
-function joinRoom({ client, payload }: CientJoinRoom) {
+function joinRoom({ client, payload }: ClientJoinRoom) {
   const { id } = payload;
 
   const room = roomManager.join(client, id);
@@ -135,6 +127,14 @@ function syncPlayer({ client, payload: player }: ClientSync) {
 function heartbeat({ client }: ClientEvent) {
   client.last_active = new Date().getTime();
 }
+
+wss.events.on("user.update", updateUser);
+wss.events.on("room.new", createRoom);
+wss.events.on("room.join", joinRoom);
+wss.events.on("room.message", messageRoom);
+wss.events.on("room.updateOwnership", updateRoomOwnership);
+wss.events.on("player.sync", syncPlayer);
+wss.events.on("heartbeat", heartbeat);
 
 setInterval(() => {
   roomManager.rooms = roomManager.rooms.map((room) => {
