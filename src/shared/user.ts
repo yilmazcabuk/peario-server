@@ -10,7 +10,7 @@ class User {
   constructor(client: Client) {
     this.id = client.id;
     this.name = client.name;
-    this.room_id = client.room_id;
+    this.room_id = client.roomId;
   }
 }
 

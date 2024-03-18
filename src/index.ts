@@ -125,7 +125,7 @@ function syncPlayer({ client, payload: player }: ClientSync) {
 }
 
 function heartbeat({ client }: ClientEvent) {
-  client.last_active = new Date().getTime();
+  client.lastActive = new Date().getTime();
 }
 
 wss.events.on("user.update", updateUser);

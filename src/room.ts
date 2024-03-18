@@ -7,48 +7,48 @@ class RoomManager {
     this.rooms = [];
   }
 
-  _find(room_id: string) {
-    return this.rooms.find(({ id }) => id === room_id);
+  private findRoomById(roomId: string): Room | undefined {
+    return this.rooms.find((room) => room.id === roomId);
   }
 
-  public getClientRoom(client: Client) {
-    return this.rooms.find(({ id }) => id === client.room_id) || null;
+  public getClientRoom(client: Client): Room | null {
+    return this.rooms.find((room) => room.id === client.roomId) || null;
   }
 
-  public create(client: Client, options: RoomOptions) {
+  public create(client: Client, options: RoomOptions): Room {
     const room = new Room(options);
     room.owner = client.id;
     this.rooms.push(room);
     return room;
   }
 
-  public join(client: Client, room_id: string) {
-    const room = this._find(room_id);
+  public join(client: Client, roomId: string): Room | null {
+    const room = this.findRoomById(roomId);
     if (!room) return null;
 
-    client.room_id = room.id;
+    client.roomId = room.id;
     room.users = [
-      ...room.users.filter(({ id }) => id !== client.id),
+      ...room.users.filter((user) => user.id !== client.id),
       new User(client),
     ];
 
     return room;
   }
 
-  public updateUser(room_id: string, user: User) {
-    const room = this._find(room_id);
+  public updateUser(roomId: string, user: User): Room | null {
+    const room = this.findRoomById(roomId);
     if (!room) return null;
 
-    room.users = room.users.map((room_user) => {
-      if (room_user.id === user.id) room_user = user;
-      return room_user;
+    room.users = room.users.map((roomUser) => {
+      if (roomUser.id === user.id) roomUser = user;
+      return roomUser;
     });
 
     return room;
   }
 
-  public updateOwner(room_id: string, user: User) {
-    const room = this._find(room_id);
+  public updateOwner(roomId: string, user: User): Room | null {
+    const room = this.findRoomById(roomId);
     if (!room) return null;
 
     room.owner = user.id;

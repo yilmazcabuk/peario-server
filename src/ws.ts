@@ -23,14 +23,12 @@ class WS {
       console.log("New client:", client.id, client.name);
     });
 
-    // Clean clients when inactive
-    setInterval(
-      () =>
-        (this.clients = this.clients.filter(
-          (c) => new Date().getTime() - c.last_active < cleanInterval,
-        )),
-      cleanInterval,
-    );
+    setInterval(() => {
+      const currentTime = new Date().getTime();
+      this.clients = this.clients.filter(
+        (client) => currentTime - client.lastActive < cleanInterval,
+      );
+    }, cleanInterval);
   }
 
   private handleEvents(client: Client, data: string) {
@@ -43,16 +41,16 @@ class WS {
     }
   }
 
-  public getClientsByRoomId(room_id: string) {
-    return this.clients.filter((client) => client.room_id === room_id);
+  public getClientsByRoomId(roomId: string) {
+    return this.clients.filter((client) => client.roomId === roomId);
   }
 
   public sendToClients(clients: Client[], event: ServerEvent) {
-    clients.forEach((c) => c.sendEvent(event));
+    clients.forEach((client) => client.sendEvent(event));
   }
 
-  public sendToRoomClients(room_id: string, event: ServerEvent) {
-    const clients = this.getClientsByRoomId(room_id);
+  public sendToRoomClients(roomId: string, event: ServerEvent) {
+    const clients = this.getClientsByRoomId(roomId);
     this.sendToClients(clients, event);
   }
 }

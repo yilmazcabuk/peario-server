@@ -8,9 +8,9 @@ class Client {
 
   public name: string;
 
-  public room_id: string = "";
+  public roomId: string = "";
 
-  public last_active: number;
+  public lastActive: number;
 
   public cooldown: number;
 
@@ -18,8 +18,8 @@ class Client {
 
   constructor(socket: WebSocket) {
     this.id = uuidv4();
-    this.name = `Guest${this.id.substr(0, 4)}`;
-    this.last_active = new Date().getTime();
+    this.name = `Guest${this.id.substring(0, 4)}`;
+    this.lastActive = new Date().getTime();
     this.socket = socket;
     this.cooldown = Date.now();
   }
