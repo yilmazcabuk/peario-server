@@ -104,7 +104,7 @@ describe("Client", function () {
         assert.strictEqual(typeof payload.user, "object");
         assert.strictEqual(typeof payload.user.id, "string");
         assert.strictEqual(typeof payload.user.name, "string");
-        assert.strictEqual(typeof payload.user.room_id, "string");
+        assert.strictEqual(typeof payload.user.roomId, "string");
 
         client.close();
         done();
@@ -167,7 +167,7 @@ describe("Client", function () {
           assert.strictEqual(payload.id, id);
           assert.strictEqual(payload.owner, owner);
           assert.strictEqual(payload.users[0].id, owner);
-          assert.strictEqual(payload.users[0].room_id, id);
+          assert.strictEqual(payload.users[0].roomId, id);
 
           client.close();
           done();

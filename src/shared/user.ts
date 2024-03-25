@@ -5,12 +5,12 @@ class User {
 
   name: string;
 
-  room_id: string;
+  roomId: string;
 
   constructor(client: Client) {
     this.id = client.id;
     this.name = client.name;
-    this.room_id = client.roomId;
+    this.roomId = client.roomId;
   }
 }
 

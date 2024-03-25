@@ -65,26 +65,38 @@ function updateUser({ client, payload }: ClientUserUpdate) {
 
 function createRoom({ client, payload }: ClientNewRoom) {
   const room = roomManager.create(client, payload);
+
   client.sendEvent(new RoomEvent(room));
 }
 
 function joinRoom({ client, payload }: ClientJoinRoom) {
   const { id } = payload;
-
   const room = roomManager.join(client, id);
-  if (!room) return client.sendEvent(new ErrorEvent("room"));
+
+  if (!room) {
+    client.sendEvent(new ErrorEvent("room"));
+    return;
+  }
 
   wss.sendToRoomClients(room.id, new SyncEvent(room));
 }
 
 function messageRoom({ client, payload }: ClientMessage) {
   const room = roomManager.getClientRoom(client);
-  if (!room) return client.sendEvent(new ErrorEvent("room"));
+
+  if (!room) {
+    client.sendEvent(new ErrorEvent("room"));
+    return;
+  }
 
   if (payload.content) {
     const event = new MessageEvent(client, payload.content);
-    if ((event.payload.date - client.cooldown) / 1000 < 3)
-      return client.sendEvent(new ErrorEvent("cooldown"));
+    const cooldownSeconds = (event.payload.date - client.cooldown) / 1000;
+
+    if (cooldownSeconds < 3) {
+      client.sendEvent(new ErrorEvent("cooldown"));
+      return;
+    }
 
     wss.sendToRoomClients(room.id, event);
     client.resetCooldown();
@@ -93,39 +105,53 @@ function messageRoom({ client, payload }: ClientMessage) {
 
 function updateRoomOwnership({ client, payload }: ClientUpdateOwnership) {
   const room = roomManager.getClientRoom(client);
-  if (!room) return client.sendEvent(new ErrorEvent("room"));
 
-  if (payload && payload.userId && room.owner === client.id) {
+  if (!room) {
+    client.sendEvent(new ErrorEvent("room"));
+    return;
+  }
+
+  const { userId } = payload || {};
+
+  if (userId && room.owner === client.id) {
     const roomUser = room.users.find(
-      ({ id, room_id }) => id === payload.userId && room_id === room.id,
+      ({ id, roomId }) => id === userId && roomId === room.id,
     );
 
-    if (!roomUser) return client.sendEvent(new ErrorEvent("user"));
+    if (!roomUser) {
+      client.sendEvent(new ErrorEvent("user"));
+      return;
+    }
 
     const updatedRoom = roomManager.updateOwner(room.id, roomUser);
-    if (updatedRoom)
+
+    if (updatedRoom) {
       wss.sendToRoomClients(updatedRoom.id, new SyncEvent(updatedRoom));
+    }
   }
 }
 
 function syncPlayer({ client, payload: player }: ClientSync) {
   const room = roomManager.getClientRoom(client);
-  if (!room) return client.sendEvent(new ErrorEvent("room"));
+
+  if (!room) {
+    client.sendEvent(new ErrorEvent("room"));
+    return;
+  }
 
   if (room.owner === client.id) {
     room.player = player;
-
-    const clients = wss
+    const otherClients = wss
       .getClientsByRoomId(room.id)
       .filter((c) => c.id !== client.id);
-    wss.sendToClients(clients, new SyncEvent(room));
+    wss.sendToClients(otherClients, new SyncEvent(room));
   } else {
     client.sendEvent(new SyncEvent(room));
   }
 }
 
 function heartbeat({ client }: ClientEvent) {
-  client.lastActive = new Date().getTime();
+  client.lastActive = Date.now();
 }
 
 wss.events.on("user.update", updateUser);
@@ -136,15 +162,26 @@ wss.events.on("room.updateOwnership", updateRoomOwnership);
 wss.events.on("player.sync", syncPlayer);
 wss.events.on("heartbeat", heartbeat);
 
-setInterval(() => {
-  roomManager.rooms = roomManager.rooms.map((room) => {
-    const tmp_users = room.users;
-    room.users = room.users.filter((user) =>
-      wss.clients.find((client) => client.id === user.id),
+function arraysEqual<T>(firstArray: T[], secondArray: T[]) {
+  return (
+    firstArray.length === secondArray.length &&
+    firstArray.every((value, index) => value === secondArray[index])
+  );
+}
+
+function updateRooms() {
+  roomManager.rooms.forEach((room) => {
+    const previousUsers = [...room.users];
+
+    const updatedUsers = room.users.filter((user) =>
+      wss.clients.some((client) => client.id === user.id),
     );
 
-    if (JSON.stringify(room.users) !== JSON.stringify(tmp_users))
-      wss.sendToRoomClients(room.id, new SyncEvent(room));
-    return room;
+    if (!arraysEqual(updatedUsers, previousUsers)) {
+      const updatedRoom = { ...room, users: updatedUsers };
+      wss.sendToRoomClients(room.id, new SyncEvent(updatedRoom));
+    }
   });
-}, INTERVAL_ROOM_UPDATE);
+}
+
+setInterval(updateRooms, INTERVAL_ROOM_UPDATE);
