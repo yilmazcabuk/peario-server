@@ -1,6 +1,6 @@
-import { v4 as uuidv4 } from "uuid";
 import WebSocket from "ws";
 
+import idGenerator from "../utilities/idGenerator";
 import { ServerEvent } from "./events/server";
 
 class Client {
@@ -17,9 +17,9 @@ class Client {
   private socket: WebSocket;
 
   constructor(socket: WebSocket) {
-    this.id = uuidv4();
+    this.id = idGenerator();
     this.name = `Guest${this.id.substring(0, 4)}`;
-    this.lastActive = new Date().getTime();
+    this.lastActive = Date.now();
     this.socket = socket;
     this.cooldown = Date.now();
   }

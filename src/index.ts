@@ -26,22 +26,21 @@ import {
   SyncEvent,
   UserEvent,
 } from "./shared/events/server";
-import WS from "./ws";
+import WebSocketAdapter from "./webSocketAdapter";
 
-const server = createServer(
-  {
-    cert: readFileSync(PEM_CERT),
-    key: readFileSync(PEM_KEY),
-  },
-  (_, res) => {
-    res.writeHead(200);
-    res.end();
-  },
-).listen(PORT);
+const serverOptions = {
+  cert: readFileSync(PEM_CERT),
+  key: readFileSync(PEM_KEY),
+};
+
+const server = createServer(serverOptions, (_, res) => {
+  res.writeHead(200);
+  res.end();
+}).listen(PORT);
 
 console.log(`Listening on port ${PORT}`);
 
-const wss = new WS(server, INTERVAL_CLIENT_CHECK);
+const wss = new WebSocketAdapter(server, INTERVAL_CLIENT_CHECK);
 const roomManager = new RoomManager();
 
 function updateUser({ client, payload }: ClientUserUpdate) {
@@ -137,11 +136,13 @@ function syncPlayer({ client, payload: player }: ClientSync) {
     return;
   }
 
-  if (room.owner === client.id) {
+  const isRoomOwner = room.owner === client.id;
+
+  if (isRoomOwner) {
     room.player = player;
     const otherClients = wss
       .getClientsByRoomId(room.id)
-      .filter((c) => c.id !== client.id);
+      .filter((user) => user.id !== client.id);
     wss.sendToClients(otherClients, new SyncEvent(room));
   } else {
     client.sendEvent(new SyncEvent(room));
@@ -171,9 +172,7 @@ function updateRooms() {
   roomManager.rooms.forEach((room) => {
     const previousUsers = [...room.users];
 
-    const updatedUsers = room.users.filter((user) =>
-      wss.clients.some((client) => client.id === user.id),
-    );
+    const updatedUsers = room.users.filter((user) => wss.clients.has(user.id));
 
     if (!arraysEqual(updatedUsers, previousUsers)) {
       const updatedRoom = { ...room, users: updatedUsers };

@@ -1,5 +1,4 @@
-import { v4 as uuidv4 } from "uuid";
-
+import idGenerator from "../utilities/idGenerator";
 import Meta from "./meta";
 import Player from "./player";
 import Stream from "./stream";
@@ -24,7 +23,7 @@ class Room {
   public owner?: string;
 
   constructor(options: RoomOptions) {
-    this.id = uuidv4();
+    this.id = idGenerator();
     this.stream = new Stream(options.stream);
     this.meta = new Meta(options.meta);
     this.player = new Player();
