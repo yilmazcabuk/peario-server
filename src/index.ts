@@ -1,5 +1,5 @@
-import fs from "fs";
-import https from "https";
+import { readFileSync } from "fs";
+import { createServer } from "https";
 
 import {
   INTERVAL_CLIENT_CHECK,
@@ -28,18 +28,16 @@ import {
 } from "./shared/events/server";
 import WS from "./ws";
 
-const server = https
-  .createServer(
-    {
-      cert: fs.readFileSync(PEM_CERT),
-      key: fs.readFileSync(PEM_KEY),
-    },
-    (_, res) => {
-      res.writeHead(200);
-      res.end();
-    },
-  )
-  .listen(PORT);
+const server = createServer(
+  {
+    cert: readFileSync(PEM_CERT),
+    key: readFileSync(PEM_KEY),
+  },
+  (_, res) => {
+    res.writeHead(200);
+    res.end();
+  },
+).listen(PORT);
 
 console.log(`Listening on port ${PORT}`);
 
