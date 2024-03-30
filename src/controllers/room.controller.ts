@@ -1,10 +1,17 @@
-import { Client, Room, RoomOptions, User } from "./shared";
+import { Client, Room, RoomOptions, User } from "../shared";
 
-class RoomManager {
+class RoomController {
   public rooms: Room[];
 
   constructor() {
     this.rooms = [];
+  }
+
+  public create(client: Client, options: RoomOptions): Room {
+    const room = new Room(options);
+    room.owner = client.id;
+    this.rooms.push(room);
+    return room;
   }
 
   private findRoomById(roomId: string): Room | undefined {
@@ -13,13 +20,6 @@ class RoomManager {
 
   public getClientRoom(client: Client): Room | null {
     return this.rooms.find((room) => room.id === client.roomId) || null;
-  }
-
-  public create(client: Client, options: RoomOptions): Room {
-    const room = new Room(options);
-    room.owner = client.id;
-    this.rooms.push(room);
-    return room;
   }
 
   public join(client: Client, roomId: string): Room | null {
@@ -57,4 +57,4 @@ class RoomManager {
   }
 }
 
-export default RoomManager;
+export default RoomController;

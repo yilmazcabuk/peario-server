@@ -1,14 +1,15 @@
 import { readFileSync } from "fs";
 import { createServer } from "https";
 
+import WebSocketAdapter from "./adapters/websocket.adapter";
 import {
   INTERVAL_CLIENT_CHECK,
   INTERVAL_ROOM_UPDATE,
   PEM_CERT,
   PEM_KEY,
   PORT,
-} from "./common/config";
-import RoomManager from "./room";
+} from "./config/config";
+import RoomController from "./controllers/room.controller";
 import { User } from "./shared";
 import {
   ClientEvent,
@@ -26,7 +27,6 @@ import {
   SyncEvent,
   UserEvent,
 } from "./shared/events/server";
-import WebSocketAdapter from "./webSocketAdapter";
 
 const serverOptions = {
   cert: readFileSync(PEM_CERT),
@@ -41,7 +41,7 @@ const server = createServer(serverOptions, (_, res) => {
 console.log(`Listening on port ${PORT}`);
 
 const wss = new WebSocketAdapter(server, INTERVAL_CLIENT_CHECK);
-const roomManager = new RoomManager();
+const roomManager = new RoomController();
 
 function updateUser({ client, payload }: ClientUserUpdate) {
   const { username } = payload;
@@ -171,7 +171,6 @@ function arraysEqual<T>(firstArray: T[], secondArray: T[]) {
 function updateRooms() {
   roomManager.rooms.forEach((room) => {
     const previousUsers = [...room.users];
-
     const updatedUsers = room.users.filter((user) => wss.clients.has(user.id));
 
     if (!arraysEqual(updatedUsers, previousUsers)) {

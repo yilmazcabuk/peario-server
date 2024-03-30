@@ -2,10 +2,10 @@ import { EventEmitter } from "events";
 import https from "https";
 import WebSocket from "ws";
 
-import { Client, User } from "./shared";
-import { ClientEvent } from "./shared/events/client";
-import { ReadyEvent, ServerEvent } from "./shared/events/server";
-import idGenerator from "./utilities/idGenerator";
+import { Client, User } from "../shared";
+import { ClientEvent } from "../shared/events/client";
+import { ReadyEvent, ServerEvent } from "../shared/events/server";
+import idGenerator from "../utilities/idGenerator";
 
 class WebSocketAdapter {
   private webSocketServer: WebSocket.Server;
