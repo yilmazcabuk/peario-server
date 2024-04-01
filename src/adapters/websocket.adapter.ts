@@ -2,7 +2,8 @@ import { EventEmitter } from "events";
 import https from "https";
 import WebSocket from "ws";
 
-import { Client, User } from "../shared";
+import { User } from "../entities";
+import { Client } from "../shared";
 import { ClientEvent } from "../shared/events/client";
 import { ReadyEvent, ServerEvent } from "../shared/events/server";
 import idGenerator from "../utilities/idGenerator";
@@ -30,7 +31,7 @@ class WebSocketAdapter {
   }
 
   private initializeClient(client: Client, clientId: string) {
-    const user = new User(client);
+    const user = new User(client.id, client.name, client.roomId);
     const event = new ReadyEvent(user);
 
     client.sendEvent(event);

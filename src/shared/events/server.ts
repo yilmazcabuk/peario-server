@@ -1,4 +1,5 @@
-import { Client, User } from "..";
+import { User } from "../../entities";
+import { Client } from "..";
 import { Room } from "../room";
 
 type ServerEvent = {

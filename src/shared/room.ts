@@ -1,8 +1,5 @@
+import { Meta, Player, Stream, User } from "../entities";
 import idGenerator from "../utilities/idGenerator";
-import Meta from "./meta";
-import Player from "./player";
-import Stream from "./stream";
-import User from "./user";
 
 interface RoomOptions {
   meta: Meta;
@@ -24,8 +21,21 @@ class Room {
 
   constructor(options: RoomOptions) {
     this.id = idGenerator();
-    this.stream = new Stream(options.stream);
-    this.meta = new Meta(options.meta);
+    this.stream = new Stream(
+      options.stream.url,
+      options.stream.infoHash,
+      options.stream.fileIdx,
+    );
+    this.meta = new Meta(
+      options.meta.id,
+      options.meta.type,
+      options.meta.name,
+      options.meta.description,
+      options.meta.year,
+      options.meta.logo,
+      options.meta.poster,
+      options.meta.background,
+    );
     this.player = new Player();
     this.users = [];
   }

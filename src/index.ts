@@ -10,7 +10,7 @@ import {
   PORT,
 } from "./config/config";
 import RoomController from "./controllers/room.controller";
-import { User } from "./shared";
+import { User } from "./entities";
 import {
   ClientEvent,
   ClientJoinRoom,
@@ -49,7 +49,7 @@ function updateUser({ client, payload }: ClientUserUpdate) {
   if (username.length > 0) {
     client.name = username.slice(0, 25);
 
-    const user = new User(client);
+    const user = new User(client.id, client.name, client.roomId);
     client.sendEvent(new UserEvent(user));
 
     const room = roomManager.getClientRoom(client);

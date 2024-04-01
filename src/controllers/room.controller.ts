@@ -1,4 +1,5 @@
-import { Client, Room, RoomOptions, User } from "../shared";
+import { User } from "../entities";
+import { Client, Room, RoomOptions } from "../shared";
 
 class RoomController {
   public rooms: Room[];
@@ -29,7 +30,7 @@ class RoomController {
     client.roomId = room.id;
     room.users = [
       ...room.users.filter((user) => user.id !== client.id),
-      new User(client),
+      new User(client.id, client.name, room.id),
     ];
 
     return room;
