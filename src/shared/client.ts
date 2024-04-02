@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 
-import idGenerator from "../utilities/idGenerator";
+import idGenerator from "../infrastructure/utilities/idGenerator";
 import { ServerEvent } from "./events/server";
 
 class Client {

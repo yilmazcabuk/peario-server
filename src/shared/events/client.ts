@@ -1,4 +1,4 @@
-import { Meta, Player, Stream } from "../../entities";
+import { Meta, Player, Stream } from "../../domain/entities";
 import { Client } from "..";
 
 type ClientEvent<T = object> = {

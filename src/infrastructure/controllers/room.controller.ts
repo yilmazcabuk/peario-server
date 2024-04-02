@@ -1,5 +1,5 @@
-import { User } from "../entities";
-import { Client, Room, RoomOptions } from "../shared";
+import { User } from "../../domain/entities";
+import { Client, Room, RoomOptions } from "../../shared";
 
 class RoomController {
   public rooms: Room[];

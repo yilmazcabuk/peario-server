@@ -1,4 +1,4 @@
-import { User } from "../../entities";
+import { User } from "../../domain/entities";
 import { Client } from "..";
 import { Room } from "../room";
 

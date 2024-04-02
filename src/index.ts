@@ -1,16 +1,16 @@
 import { readFileSync } from "fs";
 import { createServer } from "https";
 
-import WebSocketAdapter from "./adapters/websocket.adapter";
+import { User } from "./domain/entities";
+import WebSocketAdapter from "./infrastructure/adapters/websocket.adapter";
 import {
   INTERVAL_CLIENT_CHECK,
   INTERVAL_ROOM_UPDATE,
   PEM_CERT,
   PEM_KEY,
   PORT,
-} from "./config/config";
-import RoomController from "./controllers/room.controller";
-import { User } from "./entities";
+} from "./infrastructure/config/config";
+import RoomController from "./infrastructure/controllers/room.controller";
 import {
   ClientEvent,
   ClientJoinRoom,
