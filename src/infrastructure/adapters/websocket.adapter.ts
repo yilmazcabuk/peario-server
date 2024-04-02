@@ -2,9 +2,9 @@ import { EventEmitter } from "events";
 import https from "https";
 import WebSocket from "ws";
 
+import ClientDto from "../../application/dtos/client/client.dto";
 import { User } from "../../domain/entities";
 import { Client } from "../../shared";
-import { ClientEvent } from "../../shared/events/client";
 import { ReadyEvent, ServerEvent } from "../../shared/events/server";
 import idGenerator from "../utilities/idGenerator";
 
@@ -59,7 +59,7 @@ class WebSocketAdapter {
     }
   }
 
-  private emitClientEvent(type: string, eventData: ClientEvent) {
+  private emitClientEvent(type: string, eventData: ClientDto) {
     this.events.emit(type, eventData);
   }
 

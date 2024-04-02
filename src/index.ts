@@ -1,6 +1,13 @@
 import { readFileSync } from "fs";
 import { createServer } from "https";
 
+import ClientDto from "./application/dtos/client/client.dto";
+import JoinRoomDto from "./application/dtos/client/join-room.dto";
+import MessageDto from "./application/dtos/client/message.dto";
+import NewRoomDto from "./application/dtos/client/new-room.dto";
+import SyncDto from "./application/dtos/client/sync.dto";
+import UpdateOwnershipDto from "./application/dtos/client/update-ownership.dto";
+import UserUpdateDto from "./application/dtos/client/user-update.dto";
 import { User } from "./domain/entities";
 import WebSocketAdapter from "./infrastructure/adapters/websocket.adapter";
 import {
@@ -11,15 +18,6 @@ import {
   PORT,
 } from "./infrastructure/config/config";
 import RoomController from "./infrastructure/controllers/room.controller";
-import {
-  ClientEvent,
-  ClientJoinRoom,
-  ClientMessage,
-  ClientNewRoom,
-  ClientSync,
-  ClientUpdateOwnership,
-  ClientUserUpdate,
-} from "./shared/events/client";
 import {
   ErrorEvent,
   MessageEvent,
@@ -43,7 +41,7 @@ console.log(`Listening on port ${PORT}`);
 const wss = new WebSocketAdapter(server, INTERVAL_CLIENT_CHECK);
 const roomManager = new RoomController();
 
-function updateUser({ client, payload }: ClientUserUpdate) {
+function updateUser({ client, payload }: UserUpdateDto) {
   const { username } = payload;
 
   if (username.length > 0) {
@@ -60,13 +58,13 @@ function updateUser({ client, payload }: ClientUserUpdate) {
   }
 }
 
-function createRoom({ client, payload }: ClientNewRoom) {
+function createRoom({ client, payload }: NewRoomDto) {
   const room = roomManager.create(client, payload);
 
   client.sendEvent(new RoomEvent(room));
 }
 
-function joinRoom({ client, payload }: ClientJoinRoom) {
+function joinRoom({ client, payload }: JoinRoomDto) {
   const { id } = payload;
   const room = roomManager.join(client, id);
 
@@ -78,7 +76,7 @@ function joinRoom({ client, payload }: ClientJoinRoom) {
   wss.sendToRoomClients(room.id, new SyncEvent(room));
 }
 
-function messageRoom({ client, payload }: ClientMessage) {
+function messageRoom({ client, payload }: MessageDto) {
   const room = roomManager.getClientRoom(client);
 
   if (!room) {
@@ -100,7 +98,7 @@ function messageRoom({ client, payload }: ClientMessage) {
   }
 }
 
-function updateRoomOwnership({ client, payload }: ClientUpdateOwnership) {
+function updateRoomOwnership({ client, payload }: UpdateOwnershipDto) {
   const room = roomManager.getClientRoom(client);
 
   if (!room) {
@@ -128,7 +126,7 @@ function updateRoomOwnership({ client, payload }: ClientUpdateOwnership) {
   }
 }
 
-function syncPlayer({ client, payload: player }: ClientSync) {
+function syncPlayer({ client, payload: player }: SyncDto) {
   const room = roomManager.getClientRoom(client);
 
   if (!room) {
@@ -149,7 +147,7 @@ function syncPlayer({ client, payload: player }: ClientSync) {
   }
 }
 
-function heartbeat({ client }: ClientEvent) {
+function heartbeat({ client }: ClientDto) {
   client.lastActive = Date.now();
 }
 
