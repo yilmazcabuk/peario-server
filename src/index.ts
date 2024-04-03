@@ -1,14 +1,23 @@
 import { readFileSync } from "fs";
 import { createServer } from "https";
 
-import ClientDto from "./application/dtos/client/client.dto";
-import JoinRoomDto from "./application/dtos/client/join-room.dto";
-import MessageDto from "./application/dtos/client/message.dto";
-import NewRoomDto from "./application/dtos/client/new-room.dto";
-import SyncDto from "./application/dtos/client/sync.dto";
-import UpdateOwnershipDto from "./application/dtos/client/update-ownership.dto";
-import UserUpdateDto from "./application/dtos/client/user-update.dto";
-import { User } from "./domain/entities";
+import {
+  ClientDto,
+  JoinRoomDto,
+  MessageDto,
+  NewRoomDto,
+  SyncDto,
+  UpdateOwnershipDto,
+  UserUpdateDto,
+} from "./application/dtos/client";
+import {
+  ErrorEvent,
+  MessageEvent,
+  RoomEvent,
+  SyncEvent,
+  UserEvent,
+} from "./application/dtos/server";
+import UserService from "./application/services/user.service";
 import WebSocketAdapter from "./infrastructure/adapters/websocket.adapter";
 import {
   INTERVAL_CLIENT_CHECK,
@@ -18,13 +27,7 @@ import {
   PORT,
 } from "./infrastructure/config/config";
 import RoomController from "./infrastructure/controllers/room.controller";
-import {
-  ErrorEvent,
-  MessageEvent,
-  RoomEvent,
-  SyncEvent,
-  UserEvent,
-} from "./shared/events/server";
+import UserRepositoryImpl from "./infrastructure/repositories/user.repository";
 
 const serverOptions = {
   cert: readFileSync(PEM_CERT),
@@ -38,16 +41,19 @@ const server = createServer(serverOptions, (_, res) => {
 
 console.log(`Listening on port ${PORT}`);
 
-const wss = new WebSocketAdapter(server, INTERVAL_CLIENT_CHECK);
+const userRepository = new UserRepositoryImpl();
+const userService = new UserService(userRepository);
+
+const wss = new WebSocketAdapter(server, INTERVAL_CLIENT_CHECK, userService);
 const roomManager = new RoomController();
 
-function updateUser({ client, payload }: UserUpdateDto) {
+async function updateUser({ client, payload }: UserUpdateDto) {
   const { username } = payload;
 
   if (username.length > 0) {
     client.name = username.slice(0, 25);
 
-    const user = new User(client.id, client.name, client.roomId);
+    const user = await userService.create(client);
     client.sendEvent(new UserEvent(user));
 
     const room = roomManager.getClientRoom(client);

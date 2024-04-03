@@ -3,10 +3,10 @@ import https from "https";
 import WebSocket from "ws";
 
 import ClientDto from "../../application/dtos/client/client.dto";
-import { User } from "../../domain/entities";
-import { Client } from "../../shared";
-import { ReadyEvent, ServerEvent } from "../../shared/events/server";
-import idGenerator from "../utilities/idGenerator";
+import { ReadyEvent, ServerEvent } from "../../application/dtos/server";
+import UserService from "../../application/services/user.service";
+import Client from "../../shared/client";
+import idGenerator from "../utilities/id-generator.utility";
 
 class WebSocketAdapter {
   private webSocketServer: WebSocket.Server;
@@ -15,25 +15,29 @@ class WebSocketAdapter {
 
   public clients = new Map<string, Client>();
 
-  constructor(server: https.Server, cleanInterval: number) {
+  constructor(
+    server: https.Server,
+    cleanInterval: number,
+    private userService: UserService,
+  ) {
     this.webSocketServer = new WebSocket.Server({ server });
     this.setupConnectionHandler();
     this.setupCleanupInterval(cleanInterval);
   }
 
   private setupConnectionHandler() {
-    this.webSocketServer.on("connection", (socket: WebSocket) => {
+    const connectionCallback = async (socket: WebSocket) => {
       const client = new Client(socket);
       const clientId = idGenerator();
-      this.initializeClient(client, clientId);
+      await this.initializeClient(client, clientId);
       console.log("New client:", client.id, client.name);
-    });
+    };
+    this.webSocketServer.on("connection", connectionCallback);
   }
 
-  private initializeClient(client: Client, clientId: string) {
-    const user = new User(client.id, client.name, client.roomId);
+  private async initializeClient(client: Client, clientId: string) {
+    const user = await this.userService.create(client);
     const event = new ReadyEvent(user);
-
     client.sendEvent(event);
     client.onMessage((data: string) => this.handleEvents(client, data));
     this.clients.set(clientId, client);

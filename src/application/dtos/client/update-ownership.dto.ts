@@ -1,8 +1,7 @@
-import { Client } from "../../../shared";
+import Client from "../../../shared/client";
 
 export default interface UpdateOwnershipDto {
   client: Client;
-
   payload: {
     userId: string;
   };

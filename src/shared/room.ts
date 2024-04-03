@@ -1,5 +1,5 @@
 import { Meta, Player, Stream, User } from "../domain/entities";
-import idGenerator from "../infrastructure/utilities/idGenerator";
+import idGenerator from "../infrastructure/utilities/id-generator.utility";
 
 interface RoomOptions {
   meta: Meta;
