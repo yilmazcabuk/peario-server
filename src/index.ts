@@ -28,7 +28,9 @@ import {
 } from "./infrastructure/config/config";
 import RoomController from "./infrastructure/controllers/room.controller";
 import UserRepositoryImpl from "./infrastructure/repositories/user.repository";
+import LoggerController from "./infrastructure/utilities/logger/logger.controller";
 
+const logger = new LoggerController();
 const serverOptions = {
   cert: readFileSync(PEM_CERT),
   key: readFileSync(PEM_KEY),
@@ -39,7 +41,7 @@ const server = createServer(serverOptions, (_, res) => {
   res.end();
 }).listen(PORT);
 
-console.log(`Listening on port ${PORT}`);
+logger.notice(`Listening on port ${PORT}`);
 
 const userRepository = new UserRepositoryImpl();
 const userService = new UserService(userRepository);
@@ -53,24 +55,21 @@ const roomManager = new RoomController();
 
 async function updateUser({ client, payload }: UserUpdateDto) {
   const { username } = payload;
+  if (username.length === 0) return;
 
-  if (username.length > 0) {
-    client.name = username.slice(0, 25);
+  client.name = username.slice(0, 25);
+  const user = await userService.create(client);
+  webSocketAdapter.sendEvent(client, new UserEvent(user));
 
-    const user = await userService.create(client);
-    webSocketAdapter.sendEvent(client, new UserEvent(user));
+  const room = roomManager.getClientRoom(client);
+  if (!room) return;
 
-    const room = roomManager.getClientRoom(client);
-    if (room) {
-      roomManager.updateUser(room.id, user);
-      webSocketAdapter.sendToRoomClients(room.id, new SyncEvent(room));
-    }
-  }
+  roomManager.updateUser(room.id, user);
+  webSocketAdapter.sendToRoomClients(room.id, new SyncEvent(room));
 }
 
 function createRoom({ client, payload }: NewRoomDto) {
   const room = roomManager.create(client, payload);
-
   webSocketAdapter.sendEvent(client, new RoomEvent(room));
 }
 
@@ -94,18 +93,18 @@ function messageRoom({ client, payload }: MessageDto) {
     return;
   }
 
-  if (payload.content) {
-    const event = new MessageEvent(client, payload.content);
-    const cooldownSeconds = (event.payload.date - client.cooldown) / 1000;
+  if (!payload.content) return;
 
-    if (cooldownSeconds < 3) {
-      webSocketAdapter.sendEvent(client, new ErrorEvent("cooldown"));
-      return;
-    }
+  const event = new MessageEvent(client, payload.content);
+  const cooldownSeconds = (event.payload.date - client.cooldown) / 1000;
 
-    webSocketAdapter.sendToRoomClients(room.id, event);
-    client.resetCooldown();
+  if (cooldownSeconds < 3) {
+    webSocketAdapter.sendEvent(client, new ErrorEvent("cooldown"));
+    return;
   }
+
+  webSocketAdapter.sendToRoomClients(room.id, event);
+  client.resetCooldown();
 }
 
 function updateRoomOwnership({ client, payload }: UpdateOwnershipDto) {
@@ -129,13 +128,12 @@ function updateRoomOwnership({ client, payload }: UpdateOwnershipDto) {
     }
 
     const updatedRoom = roomManager.updateOwner(room.id, roomUser);
+    if (!updatedRoom) return;
 
-    if (updatedRoom) {
-      webSocketAdapter.sendToRoomClients(
-        updatedRoom.id,
-        new SyncEvent(updatedRoom),
-      );
-    }
+    webSocketAdapter.sendToRoomClients(
+      updatedRoom.id,
+      new SyncEvent(updatedRoom),
+    );
   }
 }
 
@@ -186,10 +184,10 @@ function updateRooms() {
       webSocketAdapter.clients.has(user.id),
     );
 
-    if (!arraysEqual(updatedUsers, previousUsers)) {
-      const updatedRoom = { ...room, users: updatedUsers };
-      webSocketAdapter.sendToRoomClients(room.id, new SyncEvent(updatedRoom));
-    }
+    if (arraysEqual(updatedUsers, previousUsers)) return;
+
+    const updatedRoom = { ...room, users: updatedUsers };
+    webSocketAdapter.sendToRoomClients(room.id, new SyncEvent(updatedRoom));
   });
 }
 

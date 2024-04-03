@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 
-import { idGenerator, nameGenerator } from "../infrastructure/utilities";
+import { idGenerator, nameGenerator } from "../infrastructure/utilities/generators";
 
 class Client {
   public id: string;

@@ -6,7 +6,7 @@ import { ClientDto } from "../../application/dtos/client";
 import { ReadyEvent, ServerEvent } from "../../application/dtos/server";
 import UserService from "../../application/services/user.service";
 import Client from "../../shared/client";
-import { idGenerator } from "../utilities";
+import LoggerController from "../utilities/logger";
 
 class WebSocketAdapter {
   private webSocketServer: WebSocket.Server;
@@ -14,6 +14,8 @@ class WebSocketAdapter {
   public events = new EventEmitter();
 
   public clients = new Map<string, Client>();
+
+  public logger = new LoggerController();
 
   constructor(
     server: https.Server,
@@ -28,10 +30,8 @@ class WebSocketAdapter {
   private setupConnectionHandler() {
     const connectionCallback = async (socket: WebSocket) => {
       const client = new Client(socket);
-      const clientId = idGenerator();
-
-      await this.initializeClient(client, clientId);
-      console.log("New client:", client.id, client.name);
+      await this.initializeClient(client);
+      this.logger.notice(`Client connected: ${client.name} ${client.id}`);
     };
     this.webSocketServer.on("connection", connectionCallback);
   }
@@ -44,12 +44,13 @@ class WebSocketAdapter {
     client.socket.on("message", callback);
   }
 
-  private async initializeClient(client: Client, clientId: string) {
+  private async initializeClient(client: Client) {
     const user = await this.userService.create(client);
     const event = new ReadyEvent(user);
     this.sendEvent(client, event);
-    this.onMessage(client, (data: string) => this.handleEvents(client, data));
-    this.clients.set(clientId, client);
+    const onMessageCallback = (data: string) => this.handleEvents(client, data);
+    this.onMessage(client, onMessageCallback);
+    this.clients.set(client.id, client);
   }
 
   private setupCleanupInterval(cleanInterval: number) {
@@ -66,9 +67,9 @@ class WebSocketAdapter {
     try {
       const { type, payload } = JSON.parse(data);
       this.emitClientEvent(type, { client, payload });
-      console.log(client.name, type);
+      this.logger.informational(`Client event: ${client.name} ${type}`);
     } catch (error) {
-      console.error("Error parsing message:", error);
+      this.logger.error(`Client event error: ${error}`);
     }
   }
 
@@ -79,8 +80,7 @@ class WebSocketAdapter {
   public getClientsByRoomId(roomId: string) {
     const roomClients: Client[] = [];
     const filterClients = (client: Client) => {
-      const isClientInRoom = client.roomId === roomId;
-      if (isClientInRoom) roomClients.push(client);
+      if (client.roomId === roomId) roomClients.push(client);
     };
     this.clients.forEach(filterClients);
     return roomClients;

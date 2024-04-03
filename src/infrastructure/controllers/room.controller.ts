@@ -3,58 +3,50 @@ import { Room, RoomOptions } from "../../shared";
 import Client from "../../shared/client";
 
 class RoomController {
-  public rooms: Room[];
+  public rooms: Map<string, Room>;
 
   constructor() {
-    this.rooms = [];
+    this.rooms = new Map();
   }
 
   public create(client: Client, options: RoomOptions): Room {
     const room = new Room(options);
     room.owner = client.id;
-    this.rooms.push(room);
+    this.rooms.set(room.id, room);
     return room;
   }
 
-  private findRoomById(roomId: string): Room | undefined {
-    return this.rooms.find((room) => room.id === roomId);
+  private getById(roomId: string): Room {
+    const room = this.rooms.get(roomId);
+    if (!room) throw new Error("Room not found");
+    return room;
   }
 
-  public getClientRoom(client: Client): Room | null {
-    return this.rooms.find((room) => room.id === client.roomId) || null;
+  public getClientRoom(client: Client): Room {
+    return this.getById(client.roomId);
   }
 
-  public join(client: Client, roomId: string): Room | null {
-    const room = this.findRoomById(roomId);
-    if (!room) return null;
-
+  public join(client: Client, roomId: string): Room {
+    const room = this.getById(roomId);
     client.roomId = room.id;
     room.users = [
       ...room.users.filter((user) => user.id !== client.id),
       new User(client.id, client.name, room.id),
     ];
-
     return room;
   }
 
-  public updateUser(roomId: string, user: User): Room | null {
-    const room = this.findRoomById(roomId);
-    if (!room) return null;
-
-    room.users = room.users.map((roomUser) => {
-      if (roomUser.id === user.id) roomUser = user;
-      return roomUser;
-    });
-
+  public updateUser(roomId: string, user: User): Room {
+    const room = this.getById(roomId);
+    room.users = room.users.map((roomUser) =>
+      roomUser.id === user.id ? user : roomUser,
+    );
     return room;
   }
 
-  public updateOwner(roomId: string, user: User): Room | null {
-    const room = this.findRoomById(roomId);
-    if (!room) return null;
-
+  public updateOwner(roomId: string, user: User): Room {
+    const room = this.getById(roomId);
     room.owner = user.id;
-
     return room;
   }
 }
