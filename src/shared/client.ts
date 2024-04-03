@@ -1,7 +1,6 @@
 import WebSocket from "ws";
 
-import { ServerEvent } from "../application/dtos/server";
-import idGenerator from "../infrastructure/utilities/id-generator.utility";
+import { idGenerator, nameGenerator } from "../infrastructure/utilities";
 
 class Client {
   public id: string;
@@ -14,22 +13,14 @@ class Client {
 
   public cooldown: number;
 
-  private socket: WebSocket;
+  public socket: WebSocket;
 
   constructor(socket: WebSocket) {
     this.id = idGenerator();
-    this.name = `Guest${this.id.substring(0, 4)}`;
+    this.name = nameGenerator(this.id);
     this.lastActive = Date.now();
     this.socket = socket;
     this.cooldown = Date.now();
-  }
-
-  onMessage(callback: (data: string) => void) {
-    this.socket.on("message", callback);
-  }
-
-  sendEvent({ type, payload }: ServerEvent) {
-    this.socket.send(JSON.stringify({ type, payload }));
   }
 
   resetCooldown() {
