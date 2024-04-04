@@ -2,7 +2,7 @@ import { User } from "../../domain/entities";
 import { Room, RoomOptions } from "../../shared";
 import Client from "../../shared/client";
 
-class RoomController {
+class RoomService {
   public rooms: Map<string, Room>;
 
   constructor() {
@@ -16,18 +16,15 @@ class RoomController {
     return room;
   }
 
-  private getById(roomId: string): Room {
+  public get(roomId: string): Room {
     const room = this.rooms.get(roomId);
     if (!room) throw new Error("Room not found");
     return room;
   }
 
-  public getClientRoom(client: Client): Room {
-    return this.getById(client.roomId);
-  }
-
+  // TODO: Implement addUser method
   public join(client: Client, roomId: string): Room {
-    const room = this.getById(roomId);
+    const room = this.get(roomId);
     client.roomId = room.id;
     room.users = [
       ...room.users.filter((user) => user.id !== client.id),
@@ -37,7 +34,7 @@ class RoomController {
   }
 
   public updateUser(roomId: string, user: User): Room {
-    const room = this.getById(roomId);
+    const room = this.get(roomId);
     room.users = room.users.map((roomUser) =>
       roomUser.id === user.id ? user : roomUser,
     );
@@ -45,10 +42,10 @@ class RoomController {
   }
 
   public updateOwner(roomId: string, user: User): Room {
-    const room = this.getById(roomId);
+    const room = this.get(roomId);
     room.owner = user.id;
     return room;
   }
 }
 
-export default RoomController;
+export default RoomService;

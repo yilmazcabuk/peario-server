@@ -15,9 +15,8 @@ export default class UserRepositoryImpl implements UserRepository {
     return user;
   }
 
-  async update(user: User): Promise<User> {
+  async update(id: string, user: User): Promise<void> {
     this.users.set(user.id, user);
-    return user;
   }
 
   async delete(id: string): Promise<void> {

@@ -4,23 +4,23 @@ import WebSocket from "ws";
 
 import { ClientDto } from "../../application/dtos/client";
 import { ReadyEvent, ServerEvent } from "../../application/dtos/server";
-import UserService from "../../application/services/user.service";
+import { UserService } from "../../application/services";
 import Client from "../../shared/client";
-import LoggerController from "../utilities/logger";
+import { LoggerController } from "../utilities/logger";
 
 class WebSocketAdapter {
-  private webSocketServer: WebSocket.Server;
+  private readonly webSocketServer: WebSocket.Server;
+
+  private readonly logger = new LoggerController();
 
   public events = new EventEmitter();
 
   public clients = new Map<string, Client>();
 
-  public logger = new LoggerController();
-
   constructor(
     server: https.Server,
     cleanInterval: number,
-    private userService: UserService,
+    private userController: UserService,
   ) {
     this.webSocketServer = new WebSocket.Server({ server });
     this.setupConnectionHandler();
@@ -36,16 +36,16 @@ class WebSocketAdapter {
     this.webSocketServer.on("connection", connectionCallback);
   }
 
-  public sendEvent(client: Client, { type, payload }: ServerEvent) {
-    client.socket.send(JSON.stringify({ type, payload }));
-  }
-
   private onMessage(client: Client, callback: (data: string) => void) {
     client.socket.on("message", callback);
   }
 
+  public sendEvent(client: Client, { type, payload }: ServerEvent) {
+    client.socket.send(JSON.stringify({ type, payload }));
+  }
+
   private async initializeClient(client: Client) {
-    const user = await this.userService.create(client);
+    const user = await this.userController.create(client);
     const event = new ReadyEvent(user);
     this.sendEvent(client, event);
     const onMessageCallback = (data: string) => this.handleEvents(client, data);
