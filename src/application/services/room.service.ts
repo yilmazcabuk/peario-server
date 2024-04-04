@@ -1,9 +1,12 @@
 import { User } from "../../domain/entities";
+import { LoggerController } from "../../infrastructure/utilities/logger";
 import { Room, RoomOptions } from "../../shared";
 import Client from "../../shared/client";
 
-class RoomService {
+export default class RoomService {
   public rooms: Map<string, Room>;
+
+  private logger = new LoggerController();
 
   constructor() {
     this.rooms = new Map();
@@ -18,11 +21,10 @@ class RoomService {
 
   public get(roomId: string): Room {
     const room = this.rooms.get(roomId);
-    if (!room) throw new Error("Room not found");
-    return room;
+    if (!room) this.logger.error(`Room not found: ${roomId}`);
+    return <Room>room;
   }
 
-  // TODO: Implement addUser method
   public join(client: Client, roomId: string): Room {
     const room = this.get(roomId);
     client.roomId = room.id;
@@ -47,5 +49,3 @@ class RoomService {
     return room;
   }
 }
-
-export default RoomService;

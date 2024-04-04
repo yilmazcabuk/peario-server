@@ -17,6 +17,8 @@ class WebSocketAdapter {
 
   public clients = new Map<string, Client>();
 
+  public sockets = new Map<string, WebSocket>();
+
   constructor(
     server: https.Server,
     cleanInterval: number,
@@ -29,7 +31,8 @@ class WebSocketAdapter {
 
   private setupConnectionHandler() {
     const connectionCallback = async (socket: WebSocket) => {
-      const client = new Client(socket);
+      const client = new Client();
+      this.sockets.set(client.id, socket);
       await this.initializeClient(client);
       this.logger.notice(`Client connected: ${client.name} ${client.id}`);
     };
@@ -37,11 +40,15 @@ class WebSocketAdapter {
   }
 
   private onMessage(client: Client, callback: (data: string) => void) {
-    client.socket.on("message", callback);
+    const socket = this.sockets.get(client.id);
+    if (!socket) return;
+    socket.on("message", callback);
   }
 
   public sendEvent(client: Client, { type, payload }: ServerEvent) {
-    client.socket.send(JSON.stringify({ type, payload }));
+    const socket = this.sockets.get(client.id);
+    if (!socket) return;
+    socket.send(JSON.stringify({ type, payload }));
   }
 
   private async initializeClient(client: Client) {
@@ -57,7 +64,10 @@ class WebSocketAdapter {
     const cleanInactiveClients = (client: Client, clientId: string) => {
       const currentTime = Date.now();
       const isInactive = currentTime - client.lastActive >= cleanInterval;
-      if (isInactive) this.clients.delete(clientId);
+      if (isInactive) {
+        this.sockets.delete(clientId);
+        this.clients.delete(clientId);
+      }
     };
     const cleanupCallback = () => this.clients.forEach(cleanInactiveClients);
     setInterval(cleanupCallback, cleanInterval);

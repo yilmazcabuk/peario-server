@@ -1,6 +1,7 @@
-import WebSocket from "ws";
-
-import { idGenerator, nameGenerator } from "../infrastructure/utilities/generators";
+import {
+  idGenerator,
+  nameGenerator,
+} from "../infrastructure/utilities/generators";
 
 class Client {
   public id: string;
@@ -13,13 +14,10 @@ class Client {
 
   public cooldown: number;
 
-  public socket: WebSocket;
-
-  constructor(socket: WebSocket) {
+  constructor() {
     this.id = idGenerator();
     this.name = nameGenerator(this.id);
     this.lastActive = Date.now();
-    this.socket = socket;
     this.cooldown = Date.now();
   }
 
