@@ -68,13 +68,14 @@ async function updateUser({ client, payload }: UserUpdateDto) {
 }
 
 function createRoom({ client, payload }: NewRoomDto) {
-  const room = roomService.create(client, payload);
+  const room = roomService.create(client.id, payload);
   webSocketAdapter.sendEvent(client, new RoomEvent(room));
 }
 
 function joinRoom({ client, payload }: JoinRoomDto) {
   const { id } = payload;
-  const room = roomService.join(client, id);
+  client.roomId = id;
+  const room = roomService.join(client.id, client.name, id);
 
   if (!room) {
     webSocketAdapter.sendEvent(client, new ErrorEvent("room"));
