@@ -1,5 +1,5 @@
 import type { RoomRepository } from "../../application/interfaces";
-import type { Room } from "../../domain/entities";
+import type { Room, User } from "../../domain/entities";
 import { idGenerator } from "../../infrastructure/utilities/generators";
 
 export default class RoomRepositoryImpl implements RoomRepository {
@@ -25,14 +25,14 @@ export default class RoomRepositoryImpl implements RoomRepository {
     this.rooms.delete(id);
   }
 
-  public async addUser(roomId: string, userId: string): Promise<void> {
+  public async addUser(roomId: string, user: User): Promise<void> {
     const room = await this.get(roomId);
-    room.users.push(userId);
+    room.users.push(user);
   }
 
   public async removeUser(roomId: string, userId: string): Promise<void> {
     const room = await this.get(roomId);
-    room.users.delete(userId);
+    room.users = room.users.filter((user) => user.id !== userId);
   }
 
   public async updateOwner(roomId: string, userId: string): Promise<void> {

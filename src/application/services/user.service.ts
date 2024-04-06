@@ -1,11 +1,15 @@
 import type { User } from "../../domain/entities";
-import type UserRepository from "../interfaces/user.repository.interface";
+import type { UserRepository } from "../interfaces";
 
 export default class UserService {
   constructor(private userRepository: UserRepository) {}
 
-  public async create(user: User): Promise<User> {
-    return this.userRepository.create(user);
+  public async create(
+    id?: string,
+    name?: string,
+    roomId?: string,
+  ): Promise<User> {
+    return this.userRepository.create(id, name, roomId);
   }
 
   public async get(id: string): Promise<User> {

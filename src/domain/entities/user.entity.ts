@@ -3,5 +3,7 @@ export default class User {
     public id: string,
     public name: string,
     public roomId: string,
+    public lastActive: number,
+    public cooldown: number,
   ) {}
 }

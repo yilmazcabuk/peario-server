@@ -44,7 +44,7 @@ logger.notice(`Listening on port ${PORT}`);
 
 const userRepository = new UserRepositoryImpl();
 const userService = new UserService(userRepository);
-const roomService = new RoomService();
+const roomService = new RoomService(userService);
 
 const webSocketAdapter = new WebSocketAdapter(
   server,
@@ -57,7 +57,8 @@ async function updateUser({ client, payload }: UserUpdateDto) {
   if (username.length === 0) return;
 
   client.name = username.slice(0, 25);
-  const user = await userService.create(client);
+  const { id, name, roomId } = client;
+  const user = await userService.create(id, name, roomId);
   webSocketAdapter.sendEvent(client, new UserEvent(user));
 
   const room = roomService.get(client.roomId);
@@ -67,15 +68,15 @@ async function updateUser({ client, payload }: UserUpdateDto) {
   webSocketAdapter.sendToRoomClients(room.id, new SyncEvent(room));
 }
 
-function createRoom({ client, payload }: NewRoomDto) {
+async function createRoom({ client, payload }: NewRoomDto) {
   const room = roomService.create(client, payload.meta, payload.stream);
-  webSocketAdapter.sendEvent(client, new RoomEvent(room));
+  webSocketAdapter.sendEvent(client, new RoomEvent(await room));
 }
 
-function joinRoom({ client, payload }: JoinRoomDto) {
+async function joinRoom({ client, payload }: JoinRoomDto) {
   const { id } = payload;
   client.roomId = id;
-  const room = roomService.addUser(client.id, client.name, id);
+  const room = await roomService.addUser(client.id, client.name, id);
 
   if (!room) {
     webSocketAdapter.sendEvent(client, new ErrorEvent("room"));
@@ -104,7 +105,7 @@ function messageRoom({ client, payload }: MessageDto) {
   }
 
   webSocketAdapter.sendToRoomClients(room.id, event);
-  client.resetCooldown();
+  client.cooldown = Date.now();
 }
 
 function updateRoomOwnership({ client, payload }: UpdateOwnershipDto) {

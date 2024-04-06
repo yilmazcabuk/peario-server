@@ -6,19 +6,19 @@ import type { ClientDto } from "../../application/dtos/client";
 import type { ServerEvent } from "../../application/dtos/server";
 import { ReadyEvent } from "../../application/dtos/server";
 import type { UserService } from "../../application/services";
-import Client from "../../shared/client";
+import type { User } from "../../domain/entities";
 import { LoggerController } from "../utilities/logger";
 
 export default class WebSocketAdapter {
+  public events = new EventEmitter();
+
+  public clients = new Map<string, User>();
+
+  public sockets = new Map<string, WebSocket>();
+
   private readonly webSocketServer: WebSocket.Server;
 
   private readonly logger = new LoggerController();
-
-  public events = new EventEmitter();
-
-  public clients = new Map<string, Client>();
-
-  public sockets = new Map<string, WebSocket>();
 
   constructor(
     server: https.Server,
@@ -30,9 +30,33 @@ export default class WebSocketAdapter {
     this.setupCleanupInterval(cleanInterval);
   }
 
+  public getClientsByRoomId(roomId: string) {
+    const roomClients: User[] = [];
+    const filterClients = (client: User) => {
+      if (client.roomId === roomId) roomClients.push(client);
+    };
+    this.clients.forEach(filterClients);
+    return roomClients;
+  }
+
+  public sendEvent(client: User, { type, payload }: ServerEvent) {
+    const socket = this.sockets.get(client.id);
+    if (!socket) return;
+    socket.send(JSON.stringify({ type, payload }));
+  }
+
+  public sendToClients(clients: User[], event: ServerEvent) {
+    clients.forEach((client) => this.sendEvent(client, event));
+  }
+
+  public sendToRoomClients(roomId: string, event: ServerEvent) {
+    const clients = this.getClientsByRoomId(roomId);
+    this.sendToClients(clients, event);
+  }
+
   private setupConnectionHandler() {
     const connectionCallback = async (socket: WebSocket) => {
-      const client = new Client();
+      const client = await this.userController.create();
       this.sockets.set(client.id, socket);
       await this.initializeClient(client);
       this.logger.notice(`Client connected: ${client.name} ${client.id}`);
@@ -40,20 +64,15 @@ export default class WebSocketAdapter {
     this.webSocketServer.on("connection", connectionCallback);
   }
 
-  private onMessage(client: Client, callback: (data: string) => void) {
+  private onMessage(client: User, callback: (data: string) => void) {
     const socket = this.sockets.get(client.id);
     if (!socket) return;
     socket.on("message", callback);
   }
 
-  public sendEvent(client: Client, { type, payload }: ServerEvent) {
-    const socket = this.sockets.get(client.id);
-    if (!socket) return;
-    socket.send(JSON.stringify({ type, payload }));
-  }
-
-  private async initializeClient(client: Client) {
-    const user = await this.userController.create(client);
+  private async initializeClient(client: User) {
+    const { id, name, roomId } = client;
+    const user = await this.userController.create(id, name, roomId);
     const event = new ReadyEvent(user);
     this.sendEvent(client, event);
     const onMessageCallback = (data: string) => this.handleEvents(client, data);
@@ -62,7 +81,7 @@ export default class WebSocketAdapter {
   }
 
   private setupCleanupInterval(cleanInterval: number) {
-    const cleanInactiveClients = (client: Client, clientId: string) => {
+    const cleanInactiveClients = (client: User, clientId: string) => {
       const currentTime = Date.now();
       const isInactive = currentTime - client.lastActive >= cleanInterval;
       if (!isInactive) return;
@@ -73,7 +92,7 @@ export default class WebSocketAdapter {
     setInterval(cleanupCallback, cleanInterval);
   }
 
-  private handleEvents(client: Client, data: string) {
+  private handleEvents(client: User, data: string) {
     try {
       const { type, payload } = JSON.parse(data);
       this.emitClientEvent(type, { client, payload });
@@ -85,23 +104,5 @@ export default class WebSocketAdapter {
 
   private emitClientEvent(type: string, eventData: ClientDto) {
     this.events.emit(type, eventData);
-  }
-
-  public getClientsByRoomId(roomId: string) {
-    const roomClients: Client[] = [];
-    const filterClients = (client: Client) => {
-      if (client.roomId === roomId) roomClients.push(client);
-    };
-    this.clients.forEach(filterClients);
-    return roomClients;
-  }
-
-  public sendToClients(clients: Client[], event: ServerEvent) {
-    clients.forEach((client) => this.sendEvent(client, event));
-  }
-
-  public sendToRoomClients(roomId: string, event: ServerEvent) {
-    const clients = this.getClientsByRoomId(roomId);
-    this.sendToClients(clients, event);
   }
 }

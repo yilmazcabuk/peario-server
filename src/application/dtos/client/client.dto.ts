@@ -1,6 +1,6 @@
-import type Client from "../../../shared/client";
+import type { User } from "../../../domain/entities";
 
 export default interface ClientDto {
-  client: Client;
+  client: User;
   payload: object;
 }

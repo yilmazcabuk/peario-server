@@ -1,11 +1,25 @@
 import type { UserRepository } from "../../application/interfaces";
-import type { User } from "../../domain/entities";
+import { User } from "../../domain/entities";
+import {
+  idGenerator,
+  nameGenerator,
+} from "../../infrastructure/utilities/generators";
 
 export default class UserRepositoryImpl implements UserRepository {
   private users: Map<string, User> = new Map();
 
-  public async create(user: User): Promise<User> {
-    this.users.set(user.id, user);
+  public async create(
+    id?: string,
+    name?: string,
+    roomId?: string,
+  ): Promise<User> {
+    const userId = id || idGenerator();
+    const userName = name || nameGenerator(userId);
+    const lastActive = Date.now();
+    const cooldown = Date.now();
+    const userRoomId = roomId || "";
+    const user = new User(userId, userName, userRoomId, lastActive, cooldown);
+    this.users.set(userId, user);
     return user;
   }
 

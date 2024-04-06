@@ -1,4 +1,4 @@
-import type Client from "../../../shared/client";
+import type { User } from "../../../domain/entities";
 import type ServerEvent from "./server.event.dto";
 
 export default class MessageEvent implements ServerEvent {
@@ -10,7 +10,7 @@ export default class MessageEvent implements ServerEvent {
     date: number;
   };
 
-  constructor(sender: Client, content: string) {
+  constructor(sender: User, content: string) {
     this.payload = {
       user: sender.id,
       content: content.substring(0, 300),

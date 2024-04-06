@@ -1,4 +1,4 @@
-import type { Room } from "../../domain/entities";
+import type { Room, User } from "../../domain/entities";
 
 export default interface RoomRepository {
   create(room: Room): Promise<Room>;
@@ -9,7 +9,7 @@ export default interface RoomRepository {
 
   delete(id: string): Promise<void>;
 
-  addUser(roomId: string, userId: string): Promise<void>;
+  addUser(roomId: string, user: User): Promise<void>;
 
   removeUser(roomId: string, userId: string): Promise<void>;
 

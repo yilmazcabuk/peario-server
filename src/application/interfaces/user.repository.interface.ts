@@ -1,7 +1,7 @@
 import type { User } from "../../domain/entities";
 
 export default interface UserRepository {
-  create(user: User): Promise<User>;
+  create(id?: string, name?: string, roomId?: string): Promise<User>;
 
   get(id: string): Promise<User>;
 

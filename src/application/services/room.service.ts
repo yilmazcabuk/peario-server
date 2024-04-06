@@ -1,20 +1,22 @@
-import type { Meta, Stream } from "../../domain/entities";
-import { Player, Room, User } from "../../domain/entities";
+import type { Meta, Stream, User } from "../../domain/entities";
+import { Player, Room } from "../../domain/entities";
 import { idGenerator } from "../../infrastructure/utilities/generators";
 import { LoggerController } from "../../infrastructure/utilities/logger";
+import type UserService from "./user.service";
 
 export default class RoomService {
   public rooms: Map<string, Room>;
 
   private logger = new LoggerController();
 
-  constructor() {
+  constructor(private userService: UserService) {
     this.rooms = new Map();
   }
 
-  public create(owner: User, meta: Meta, stream: Stream): Room {
+  public async create(owner: User, meta: Meta, stream: Stream): Promise<Room> {
     const id = idGenerator();
-    const users = [new User(owner.id, owner.name, owner.roomId)];
+    const user = await this.userService.get(owner.id);
+    const users = [user];
     const player = new Player();
     const room = new Room(id, owner.id, users, meta, player, stream);
     this.rooms.set(room.id, room);
@@ -27,12 +29,14 @@ export default class RoomService {
     return <Room>room;
   }
 
-  public addUser(id: string, name: string, roomId: string): Room {
+  public async addUser(
+    id: string,
+    name: string,
+    roomId: string,
+  ): Promise<Room> {
     const room = this.get(roomId);
-    room.users = [
-      ...room.users.filter((user) => user.id !== id),
-      new User(id, name, room.id),
-    ];
+    const newUser = await this.userService.create(id, name, roomId);
+    room.users = [...room.users.filter((user) => user.id !== id), newUser];
     return room;
   }
 

@@ -1,7 +1,6 @@
-import type { Player } from "../../../domain/entities";
-import type Client from "../../../shared/client";
+import type { Player, User } from "../../../domain/entities";
 
 export default interface SyncDto {
-  client: Client;
+  client: User;
   payload: Player;
 }
