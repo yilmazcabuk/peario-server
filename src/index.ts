@@ -19,28 +19,22 @@ import {
 } from "./application/dtos/server";
 import { RoomService, UserService } from "./application/services";
 import WebSocketAdapter from "./infrastructure/adapters/websocket.adapter";
-import {
-  INTERVAL_CLIENT_CHECK,
-  INTERVAL_ROOM_UPDATE,
-  PEM_CERT,
-  PEM_KEY,
-  PORT,
-} from "./infrastructure/config/config";
+import config from "./infrastructure/config/config";
 import { LoggerController } from "./infrastructure/utilities/logger";
-import UserRepositoryImpl from "./persistence/repositories/user.repository";
+import { UserRepositoryImpl } from "./persistence/repositories";
 
 const logger = new LoggerController();
 const serverOptions = {
-  cert: readFileSync(PEM_CERT),
-  key: readFileSync(PEM_KEY),
+  cert: readFileSync(config.PEM_CERT),
+  key: readFileSync(config.PEM_KEY),
 };
 
 const server = createServer(serverOptions, (_, res) => {
   res.writeHead(200);
   res.end();
-}).listen(PORT);
+}).listen(config.PORT);
 
-logger.notice(`Listening on port ${PORT}`);
+logger.notice(`Listening on port ${config.PORT}`);
 
 const userRepository = new UserRepositoryImpl();
 const userService = new UserService(userRepository);
@@ -48,7 +42,7 @@ const roomService = new RoomService(userService);
 
 const webSocketAdapter = new WebSocketAdapter(
   server,
-  INTERVAL_CLIENT_CHECK,
+  config.INTERVAL_CLIENT_CHECK,
   userService,
 );
 
@@ -196,4 +190,4 @@ function updateRooms() {
   });
 }
 
-setInterval(updateRooms, INTERVAL_ROOM_UPDATE);
+setInterval(updateRooms, config.INTERVAL_ROOM_UPDATE);

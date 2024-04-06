@@ -1,11 +1,11 @@
-import { config } from "dotenv";
+import "dotenv/config";
 
-config();
+const config = {
+  PORT: Number(process.env.PORT),
+  PEM_CERT: String(process.env.PEM_CERT),
+  PEM_KEY: String(process.env.PEM_KEY),
+  INTERVAL_CLIENT_CHECK: Number(process.env.INTERVAL_CLIENT_CHECK),
+  INTERVAL_ROOM_UPDATE: Number(process.env.INTERVAL_ROOM_UPDATE),
+};
 
-export const PORT = process.env.PORT as unknown as number;
-export const PEM_CERT = process.env.PEM_CERT as unknown as string;
-export const PEM_KEY = process.env.PEM_KEY as unknown as string;
-export const INTERVAL_CLIENT_CHECK = process.env
-  .INTERVAL_CLIENT_CHECK as unknown as number;
-export const INTERVAL_ROOM_UPDATE = process.env
-  .INTERVAL_ROOM_UPDATE as unknown as number;
+export default config;
