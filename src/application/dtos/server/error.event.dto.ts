@@ -1,9 +1,9 @@
-import ServerEvent from "./server.event.dto";
+import type ServerEvent from "./server.event.dto";
 
 export default class ErrorEvent implements ServerEvent {
-  type = "error";
+  public type = "error";
 
-  payload: {
+  public payload: {
     type: string;
   };
 

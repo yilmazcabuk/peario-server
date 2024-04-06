@@ -1,12 +1,12 @@
-import ClientDto from "./client.dto";
-import JoinRoomDto from "./join-room.dto";
-import MessageDto from "./message.dto";
-import NewRoomDto from "./new-room.dto";
-import SyncDto from "./sync.dto";
-import UpdateOwnershipDto from "./update-ownership.dto";
-import UserUpdateDto from "./user-update.dto";
+import type ClientDto from "./client.dto";
+import type JoinRoomDto from "./join-room.dto";
+import type MessageDto from "./message.dto";
+import type NewRoomDto from "./new-room.dto";
+import type SyncDto from "./sync.dto";
+import type UpdateOwnershipDto from "./update-ownership.dto";
+import type UserUpdateDto from "./user-update.dto";
 
-export {
+export type {
   ClientDto,
   JoinRoomDto,
   MessageDto,

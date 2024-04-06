@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { createServer } from "https";
 
-import {
+import type {
   ClientDto,
   JoinRoomDto,
   MessageDto,
@@ -26,8 +26,8 @@ import {
   PEM_KEY,
   PORT,
 } from "./infrastructure/config/config";
-import UserRepositoryImpl from "./infrastructure/repositories/user.repository";
 import { LoggerController } from "./infrastructure/utilities/logger";
+import UserRepositoryImpl from "./persistence/repositories/user.repository";
 
 const logger = new LoggerController();
 const serverOptions = {
@@ -68,14 +68,14 @@ async function updateUser({ client, payload }: UserUpdateDto) {
 }
 
 function createRoom({ client, payload }: NewRoomDto) {
-  const room = roomService.create(client.id, payload);
+  const room = roomService.create(client, payload.meta, payload.stream);
   webSocketAdapter.sendEvent(client, new RoomEvent(room));
 }
 
 function joinRoom({ client, payload }: JoinRoomDto) {
   const { id } = payload;
   client.roomId = id;
-  const room = roomService.join(client.id, client.name, id);
+  const room = roomService.addUser(client.id, client.name, id);
 
   if (!room) {
     webSocketAdapter.sendEvent(client, new ErrorEvent("room"));
@@ -117,24 +117,25 @@ function updateRoomOwnership({ client, payload }: UpdateOwnershipDto) {
 
   const { userId } = payload || {};
 
-  if (userId && room.owner === client.id) {
-    const roomUser = room.users.find(
-      ({ id, roomId }) => id === userId && roomId === room.id,
-    );
+  if (!userId || room.owner !== client.id) return;
 
-    if (!roomUser) {
-      webSocketAdapter.sendEvent(client, new ErrorEvent("user"));
-      return;
-    }
+  const roomUser = room.users.find(
+    ({ id, roomId }) => id === userId && roomId === room.id,
+  );
 
-    const updatedRoom = roomService.updateOwner(room.id, roomUser);
-    if (!updatedRoom) return;
-
-    webSocketAdapter.sendToRoomClients(
-      updatedRoom.id,
-      new SyncEvent(updatedRoom),
-    );
+  if (!roomUser) {
+    webSocketAdapter.sendEvent(client, new ErrorEvent("user"));
+    return;
   }
+
+  const updatedRoom = roomService.updateOwner(room.id, roomUser);
+
+  if (!updatedRoom) return;
+
+  webSocketAdapter.sendToRoomClients(
+    updatedRoom.id,
+    new SyncEvent(updatedRoom),
+  );
 }
 
 function syncPlayer({ client, payload: player }: SyncDto) {
@@ -147,15 +148,18 @@ function syncPlayer({ client, payload: player }: SyncDto) {
 
   const isRoomOwner = room.owner === client.id;
 
-  if (isRoomOwner) {
-    room.player = player;
-    const otherClients = webSocketAdapter
-      .getClientsByRoomId(room.id)
-      .filter((user) => user.id !== client.id);
-    webSocketAdapter.sendToClients(otherClients, new SyncEvent(room));
-  } else {
+  if (!isRoomOwner) {
     webSocketAdapter.sendEvent(client, new SyncEvent(room));
+    return;
   }
+
+  room.player = player;
+
+  const otherClients = webSocketAdapter
+    .getClientsByRoomId(room.id)
+    .filter((user) => user.id !== client.id);
+
+  webSocketAdapter.sendToClients(otherClients, new SyncEvent(room));
 }
 
 function heartbeat({ client }: ClientDto) {

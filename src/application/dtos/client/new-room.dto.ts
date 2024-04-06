@@ -1,5 +1,5 @@
-import { Meta, Stream } from "../../../domain/entities";
-import Client from "../../../shared/client";
+import type { Meta, Stream } from "../../../domain/entities";
+import type Client from "../../../shared/client";
 
 export default interface NewRoomDto {
   client: Client;

@@ -23,9 +23,22 @@
     "import"
   ],
   "rules": {
+    "@typescript-eslint/consistent-type-imports": "error",
+    "@typescript-eslint/consistent-type-exports": "error",
+    "@typescript-eslint/explicit-member-accessibility": [
+      "error",
+      {
+        "accessibility": "explicit",
+        "overrides": {
+          "constructors": "no-public"
+        }
+      }
+    ],
+    "@typescript-eslint/member-ordering": "error",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     "import/first": "error",
     "import/newline-after-import": "error",
     "import/no-duplicates": "error"
-  }}
+  }
+}

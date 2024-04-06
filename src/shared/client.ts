@@ -21,7 +21,7 @@ class Client {
     this.cooldown = Date.now();
   }
 
-  resetCooldown() {
+  public resetCooldown() {
     this.cooldown = Date.now();
   }
 }

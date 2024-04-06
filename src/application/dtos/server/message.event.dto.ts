@@ -1,10 +1,10 @@
-import Client from "../../../shared/client";
-import ServerEvent from "./server.event.dto";
+import type Client from "../../../shared/client";
+import type ServerEvent from "./server.event.dto";
 
 export default class MessageEvent implements ServerEvent {
-  type = "message";
+  public type = "message";
 
-  payload: {
+  public payload: {
     user: string;
     content: string;
     date: number;

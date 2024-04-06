@@ -1,4 +1,4 @@
-import Logger from "./logger.interface";
+import type Logger from "./logger.interface";
 import WinstonLogger from "./winston.logger";
 
 export default class LoggerController {

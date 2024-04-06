@@ -1,10 +1,10 @@
-import { User } from "../../../domain/entities";
-import ServerEvent from "./server.event.dto";
+import type { User } from "../../../domain/entities";
+import type ServerEvent from "./server.event.dto";
 
 export default class UserEvent implements ServerEvent {
-  type = "user";
+  public type = "user";
 
-  payload: {
+  public payload: {
     user: User;
   };
 

@@ -1,14 +1,15 @@
 import { EventEmitter } from "events";
-import https from "https";
+import type https from "https";
 import WebSocket from "ws";
 
-import { ClientDto } from "../../application/dtos/client";
-import { ReadyEvent, ServerEvent } from "../../application/dtos/server";
-import { UserService } from "../../application/services";
+import type { ClientDto } from "../../application/dtos/client";
+import type { ServerEvent } from "../../application/dtos/server";
+import { ReadyEvent } from "../../application/dtos/server";
+import type { UserService } from "../../application/services";
 import Client from "../../shared/client";
 import { LoggerController } from "../utilities/logger";
 
-class WebSocketAdapter {
+export default class WebSocketAdapter {
   private readonly webSocketServer: WebSocket.Server;
 
   private readonly logger = new LoggerController();
@@ -64,10 +65,9 @@ class WebSocketAdapter {
     const cleanInactiveClients = (client: Client, clientId: string) => {
       const currentTime = Date.now();
       const isInactive = currentTime - client.lastActive >= cleanInterval;
-      if (isInactive) {
-        this.sockets.delete(clientId);
-        this.clients.delete(clientId);
-      }
+      if (!isInactive) return;
+      this.sockets.delete(clientId);
+      this.clients.delete(clientId);
     };
     const cleanupCallback = () => this.clients.forEach(cleanInactiveClients);
     setInterval(cleanupCallback, cleanInterval);
@@ -105,5 +105,3 @@ class WebSocketAdapter {
     this.sendToClients(clients, event);
   }
 }
-
-export default WebSocketAdapter;

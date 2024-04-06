@@ -1,10 +1,10 @@
-import { Room } from "../../../shared";
-import ServerEvent from "./server.event.dto";
+import type { Room } from "../../../domain/entities";
+import type ServerEvent from "./server.event.dto";
 
 export default class RoomEvent implements ServerEvent {
-  type = "room";
+  public type = "room";
 
-  payload: Room;
+  public payload: Room;
 
   constructor(room: Room) {
     this.payload = room;

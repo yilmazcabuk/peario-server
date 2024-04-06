@@ -1,4 +1,4 @@
-import Client from "../../../shared/client";
+import type Client from "../../../shared/client";
 
 export default interface UserUpdateDto {
   client: Client;

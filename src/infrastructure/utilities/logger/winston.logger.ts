@@ -1,6 +1,6 @@
 import winston, { createLogger, format } from "winston";
 
-import Logger from "./logger.interface";
+import type Logger from "./logger.interface";
 
 export default class WinstonLogger implements Logger {
   private logger: winston.Logger;
@@ -21,35 +21,35 @@ export default class WinstonLogger implements Logger {
     });
   }
 
-  emergency(message: string): void {
+  public emergency(message: string): void {
     this.logger.emerg(message);
   }
 
-  alert(message: string): void {
+  public alert(message: string): void {
     this.logger.alert(message);
   }
 
-  critical(message: string): void {
+  public critical(message: string): void {
     this.logger.crit(message);
   }
 
-  error(message: string): void {
+  public error(message: string): void {
     this.logger.error(message);
   }
 
-  warning(message: string): void {
+  public warning(message: string): void {
     this.logger.warning(message);
   }
 
-  notice(message: string): void {
+  public notice(message: string): void {
     this.logger.notice(message);
   }
 
-  informational(message: string): void {
+  public informational(message: string): void {
     this.logger.info(message);
   }
 
-  debug(message: string): void {
+  public debug(message: string): void {
     this.logger.debug(message);
   }
 }
