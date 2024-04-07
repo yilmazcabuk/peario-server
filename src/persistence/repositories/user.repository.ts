@@ -1,5 +1,5 @@
-import type { UserRepository } from "../../application/interfaces";
 import { User } from "../../domain/entities";
+import type { UserRepository } from "../../domain/interfaces";
 import {
   idGenerator,
   nameGenerator,

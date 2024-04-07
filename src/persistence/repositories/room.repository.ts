@@ -1,5 +1,5 @@
-import type { RoomRepository } from "../../application/interfaces";
 import type { Room, User } from "../../domain/entities";
+import type { RoomRepository } from "../../domain/interfaces";
 import { idGenerator } from "../../infrastructure/utilities/generators";
 
 export default class RoomRepositoryImpl implements RoomRepository {

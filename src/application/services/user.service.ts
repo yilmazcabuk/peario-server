@@ -1,5 +1,5 @@
 import type { User } from "../../domain/entities";
-import type { UserRepository } from "../interfaces";
+import type { UserRepository } from "../../domain/interfaces";
 
 export default class UserService {
   constructor(private userRepository: UserRepository) {}

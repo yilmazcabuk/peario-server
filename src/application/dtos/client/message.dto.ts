@@ -1,6 +1,6 @@
 import type { User } from "../../../domain/entities";
 
-export default interface MessageDto {
+export default interface MessageDTO {
   client: User;
   payload: {
     content: string;

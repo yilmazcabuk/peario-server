@@ -2,13 +2,13 @@ import { readFileSync } from "fs";
 import { createServer } from "https";
 
 import type {
-  ClientDto,
-  JoinRoomDto,
-  MessageDto,
-  NewRoomDto,
-  SyncDto,
-  UpdateOwnershipDto,
-  UserUpdateDto,
+  ClientDTO,
+  JoinRoomDTO,
+  MessageDTO,
+  NewRoomDTO,
+  SyncDTO,
+  UpdateOwnershipDTO,
+  UserUpdateDTO,
 } from "./application/dtos/client";
 import {
   ErrorEvent,
@@ -19,34 +19,37 @@ import {
 } from "./application/dtos/server";
 import { RoomService, UserService } from "./application/services";
 import WebSocketAdapter from "./infrastructure/adapters/websocket.adapter";
-import config from "./infrastructure/config/config";
+import { ConfigRepositoryImpl, ConfigService } from "./infrastructure/config";
 import { LoggerController } from "./infrastructure/utilities/logger";
 import { UserRepositoryImpl } from "./persistence/repositories";
 
+const configRepository = new ConfigRepositoryImpl();
+const configService = new ConfigService(configRepository);
+const { settings } = configService;
+const userRepository = new UserRepositoryImpl();
+const userService = new UserService(userRepository);
+const roomService = new RoomService(userService);
 const logger = new LoggerController();
+
 const serverOptions = {
-  cert: readFileSync(config.PEM_CERT),
-  key: readFileSync(config.PEM_KEY),
+  cert: readFileSync(settings.PEM_CERT),
+  key: readFileSync(settings.PEM_KEY),
 };
 
 const server = createServer(serverOptions, (_, res) => {
   res.writeHead(200);
   res.end();
-}).listen(config.PORT);
+}).listen(settings.PORT);
 
-logger.notice(`Listening on port ${config.PORT}`);
-
-const userRepository = new UserRepositoryImpl();
-const userService = new UserService(userRepository);
-const roomService = new RoomService(userService);
+logger.notice(`Listening on port ${settings.PORT}`);
 
 const webSocketAdapter = new WebSocketAdapter(
   server,
-  config.INTERVAL_CLIENT_CHECK,
+  settings.INTERVAL_CLIENT_CHECK,
   userService,
 );
 
-async function updateUser({ client, payload }: UserUpdateDto) {
+async function updateUser({ client, payload }: UserUpdateDTO) {
   const { username } = payload;
   if (username.length === 0) return;
 
@@ -62,12 +65,12 @@ async function updateUser({ client, payload }: UserUpdateDto) {
   webSocketAdapter.sendToRoomClients(room.id, new SyncEvent(room));
 }
 
-async function createRoom({ client, payload }: NewRoomDto) {
+async function createRoom({ client, payload }: NewRoomDTO) {
   const room = roomService.create(client, payload.meta, payload.stream);
   webSocketAdapter.sendEvent(client, new RoomEvent(await room));
 }
 
-async function joinRoom({ client, payload }: JoinRoomDto) {
+async function joinRoom({ client, payload }: JoinRoomDTO) {
   const { id } = payload;
   client.roomId = id;
   const room = await roomService.addUser(client.id, client.name, id);
@@ -80,7 +83,7 @@ async function joinRoom({ client, payload }: JoinRoomDto) {
   webSocketAdapter.sendToRoomClients(room.id, new SyncEvent(room));
 }
 
-function messageRoom({ client, payload }: MessageDto) {
+function messageRoom({ client, payload }: MessageDTO) {
   const room = roomService.get(client.roomId);
 
   if (!room) {
@@ -102,7 +105,7 @@ function messageRoom({ client, payload }: MessageDto) {
   client.cooldown = Date.now();
 }
 
-function updateRoomOwnership({ client, payload }: UpdateOwnershipDto) {
+function updateRoomOwnership({ client, payload }: UpdateOwnershipDTO) {
   const room = roomService.get(client.roomId);
 
   if (!room) {
@@ -133,7 +136,7 @@ function updateRoomOwnership({ client, payload }: UpdateOwnershipDto) {
   );
 }
 
-function syncPlayer({ client, payload: player }: SyncDto) {
+function syncPlayer({ client, payload: player }: SyncDTO) {
   const room = roomService.get(client.roomId);
 
   if (!room) {
@@ -157,7 +160,7 @@ function syncPlayer({ client, payload: player }: SyncDto) {
   webSocketAdapter.sendToClients(otherClients, new SyncEvent(room));
 }
 
-function heartbeat({ client }: ClientDto) {
+function heartbeat({ client }: ClientDTO) {
   client.lastActive = Date.now();
 }
 
@@ -190,4 +193,4 @@ function updateRooms() {
   });
 }
 
-setInterval(updateRooms, config.INTERVAL_ROOM_UPDATE);
+setInterval(updateRooms, settings.INTERVAL_ROOM_UPDATE);

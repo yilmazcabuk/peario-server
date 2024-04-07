@@ -1,6 +1,6 @@
 import type { User } from "../../../domain/entities";
 
-export default interface UserUpdateDto {
+export default interface UserUpdateDTO {
   client: User;
   payload: {
     username: string;

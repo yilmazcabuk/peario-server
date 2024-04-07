@@ -1,4 +1,4 @@
-import type { User } from "../../domain/entities";
+import type { User } from "../entities";
 
 export default interface UserRepository {
   create(id?: string, name?: string, roomId?: string): Promise<User>;
