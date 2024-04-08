@@ -1,4 +1,4 @@
-import type ServerEvent from "./server.event.dto";
+import type ServerEvent from "./server.event.interface";
 
 export default class ErrorEvent implements ServerEvent {
   public type = "error";

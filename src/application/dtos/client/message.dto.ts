@@ -1,8 +1,3 @@
-import type { User } from "../../../domain/entities";
+import type DTO from "./dto.interface";
 
-export default interface MessageDTO {
-  client: User;
-  payload: {
-    content: string;
-  };
-}
+export default interface MessageDTO extends DTO<{ content: string }> {}

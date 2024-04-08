@@ -1,17 +1,12 @@
 import type { Meta, Stream, User } from "../../domain/entities";
 import { Player, Room } from "../../domain/entities";
 import { idGenerator } from "../../infrastructure/utilities/generators";
-import { LoggerController } from "../../infrastructure/utilities/logger";
 import type UserService from "./user.service";
 
 export default class RoomService {
-  public rooms: Map<string, Room>;
+  public rooms = new Map<string, Room>();
 
-  private logger = new LoggerController();
-
-  constructor(private userService: UserService) {
-    this.rooms = new Map();
-  }
+  constructor(private userService: UserService) {}
 
   public async create(owner: User, meta: Meta, stream: Stream): Promise<Room> {
     const id = idGenerator();
@@ -25,25 +20,22 @@ export default class RoomService {
 
   public get(roomId: string): Room {
     const room = this.rooms.get(roomId);
-    if (!room) this.logger.error(`Room not found: ${roomId}`);
     return <Room>room;
   }
 
-  public async addUser(
-    id: string,
-    name: string,
-    roomId: string,
-  ): Promise<Room> {
+  public async addUser(user: User, roomId: string): Promise<Room> {
     const room = this.get(roomId);
-    const newUser = await this.userService.create(id, name, roomId);
-    room.users = [...room.users.filter((user) => user.id !== id), newUser];
+    room.users = [
+      ...room.users.filter((roomUser) => roomUser.id !== user.id),
+      user,
+    ];
     return room;
   }
 
   public updateUser(roomId: string, user: User): Room {
     const room = this.get(roomId);
     room.users = room.users.map((roomUser) =>
-      roomUser.id === user.id ? user : roomUser,
+      roomUser.id === user.id ? user : roomUser
     );
     return room;
   }

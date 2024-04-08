@@ -1,8 +1,3 @@
-import type { User } from "../../../domain/entities";
+import type DTO from "./dto.interface";
 
-export default interface JoinRoomDTO {
-  client: User;
-  payload: {
-    id: string;
-  };
-}
+export default interface JoinRoomDTO extends DTO<{ id: string }> {}

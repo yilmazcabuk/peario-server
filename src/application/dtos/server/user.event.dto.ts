@@ -1,5 +1,5 @@
 import type { User } from "../../../domain/entities";
-import type ServerEvent from "./server.event.dto";
+import type ServerEvent from "./server.event.interface";
 
 export default class UserEvent implements ServerEvent {
   public type = "user";

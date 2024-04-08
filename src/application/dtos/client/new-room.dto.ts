@@ -1,9 +1,5 @@
-import type { Meta, Stream, User } from "../../../domain/entities";
+import type { Meta, Stream } from "../../../domain/entities";
+import type DTO from "./dto.interface";
 
-export default interface NewRoomDTO {
-  client: User;
-  payload: {
-    meta: Meta;
-    stream: Stream;
-  };
-}
+export default interface NewRoomDTO
+  extends DTO<{ meta: Meta; stream: Stream }> {}

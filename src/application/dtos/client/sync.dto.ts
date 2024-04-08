@@ -1,6 +1,4 @@
-import type { Player, User } from "../../../domain/entities";
+import type { Player } from "../../../domain/entities";
+import type DTO from "./dto.interface";
 
-export default interface SyncDTO {
-  client: User;
-  payload: Player;
-}
+export default interface SyncDTO extends DTO<{ player: Player }> {}

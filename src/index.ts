@@ -46,7 +46,7 @@ logger.notice(`Listening on port ${settings.PORT}`);
 const webSocketAdapter = new WebSocketAdapter(
   server,
   settings.INTERVAL_CLIENT_CHECK,
-  userService,
+  userService
 );
 
 async function updateUser({ client, payload }: UserUpdateDTO) {
@@ -73,7 +73,7 @@ async function createRoom({ client, payload }: NewRoomDTO) {
 async function joinRoom({ client, payload }: JoinRoomDTO) {
   const { id } = payload;
   client.roomId = id;
-  const room = await roomService.addUser(client.id, client.name, id);
+  const room = await roomService.addUser(client, client.roomId);
 
   if (!room) {
     webSocketAdapter.sendEvent(client, new ErrorEvent("room"));
@@ -118,7 +118,7 @@ function updateRoomOwnership({ client, payload }: UpdateOwnershipDTO) {
   if (!userId || room.owner !== client.id) return;
 
   const roomUser = room.users.find(
-    ({ id, roomId }) => id === userId && roomId === room.id,
+    ({ id, roomId }) => id === userId && roomId === room.id
   );
 
   if (!roomUser) {
@@ -132,11 +132,11 @@ function updateRoomOwnership({ client, payload }: UpdateOwnershipDTO) {
 
   webSocketAdapter.sendToRoomClients(
     updatedRoom.id,
-    new SyncEvent(updatedRoom),
+    new SyncEvent(updatedRoom)
   );
 }
 
-function syncPlayer({ client, payload: player }: SyncDTO) {
+function syncPlayer({ client, payload }: SyncDTO) {
   const room = roomService.get(client.roomId);
 
   if (!room) {
@@ -151,7 +151,7 @@ function syncPlayer({ client, payload: player }: SyncDTO) {
     return;
   }
 
-  room.player = player;
+  room.player = payload.player;
 
   const otherClients = webSocketAdapter
     .getClientsByRoomId(room.id)
@@ -183,7 +183,7 @@ function updateRooms() {
   roomService.rooms.forEach((room) => {
     const previousUsers = [...room.users];
     const updatedUsers = room.users.filter((user) =>
-      webSocketAdapter.clients.has(user.id),
+      webSocketAdapter.clients.has(user.id)
     );
 
     if (arraysEqual(updatedUsers, previousUsers)) return;
