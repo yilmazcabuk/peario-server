@@ -23,7 +23,7 @@ export default class WebSocketAdapter {
   constructor(
     server: https.Server,
     cleanInterval: number,
-    private userController: UserService,
+    private userService: UserService,
   ) {
     this.webSocketServer = new WebSocket.Server({ server });
     this.setupConnectionHandler();
@@ -56,7 +56,7 @@ export default class WebSocketAdapter {
 
   private setupConnectionHandler() {
     const connectionCallback = async (socket: WebSocket) => {
-      const client = await this.userController.create();
+      const client = await this.userService.create();
       this.sockets.set(client.id, socket);
       await this.initializeClient(client);
       this.logger.notice(`Client connected: ${client.name} ${client.id}`);
@@ -72,7 +72,7 @@ export default class WebSocketAdapter {
 
   private async initializeClient(client: User) {
     const { id, name, roomId } = client;
-    const user = await this.userController.create(id, name, roomId);
+    const user = await this.userService.create(id, name, roomId);
     const event = new ReadyEvent(user);
     this.sendEvent(client, event);
     const onMessageCallback = (data: string) => this.handleEvents(client, data);
