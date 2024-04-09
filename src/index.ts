@@ -24,14 +24,21 @@ const configService = new ConfigService(configRepository);
 const userRepository = new UserRepositoryImpl();
 const userService = new UserService(userRepository);
 const roomService = new RoomService(userService);
-const httpsAdapter = new HttpsAdapter(configService.server);
 
 const { INTERVAL_CLIENT_CHECK, INTERVAL_ROOM_UPDATE } = configService.intervals;
-const webSocketAdapter = new WebSocketAdapter(
-  httpsAdapter,
-  INTERVAL_CLIENT_CHECK,
-  userService,
-);
+
+function createServer(interval: number) {
+  const httpsAdapter = new HttpsAdapter(configService.server);
+  const httpsServer = httpsAdapter.create();
+  const webSocketAdapter = new WebSocketAdapter(
+    httpsServer,
+    interval,
+    userService
+  );
+  return webSocketAdapter;
+}
+
+const webSocketAdapter = createServer(INTERVAL_CLIENT_CHECK);
 
 async function updateUser({ client, payload }: UserUpdateDTO) {
   const { username } = payload;
@@ -102,7 +109,7 @@ function updateRoomOwnership({ client, payload }: UpdateOwnershipDTO) {
   if (!userId || room.owner !== client.id) return;
 
   const roomUser = room.users.find(
-    ({ id, roomId }) => id === userId && roomId === room.id,
+    ({ id, roomId }) => id === userId && roomId === room.id
   );
 
   if (!roomUser) {
@@ -116,7 +123,7 @@ function updateRoomOwnership({ client, payload }: UpdateOwnershipDTO) {
 
   webSocketAdapter.sendToRoomClients(
     updatedRoom.id,
-    new SyncEvent(updatedRoom),
+    new SyncEvent(updatedRoom)
   );
 }
 
@@ -148,13 +155,21 @@ function heartbeat({ client }: ClientDTO) {
   client.lastActive = Date.now();
 }
 
-webSocketAdapter.events.on("user.update", updateUser);
-webSocketAdapter.events.on("room.new", createRoom);
-webSocketAdapter.events.on("room.join", joinRoom);
-webSocketAdapter.events.on("room.message", messageRoom);
-webSocketAdapter.events.on("room.updateOwnership", updateRoomOwnership);
-webSocketAdapter.events.on("player.sync", syncPlayer);
-webSocketAdapter.events.on("heartbeat", heartbeat);
+function setEventHandlers() {
+  const eventMappings = {
+    "user.update": updateUser,
+    "room.new": createRoom,
+    "room.join": joinRoom,
+    "room.message": messageRoom,
+    "room.updateOwnership": updateRoomOwnership,
+    "player.sync": syncPlayer,
+    heartbeat,
+  };
+
+  Object.entries(eventMappings).forEach(([event, handler]) => {
+    webSocketAdapter.events.on(event, handler);
+  });
+}
 
 function arraysEqual<T>(firstArray: T[], secondArray: T[]) {
   return (
@@ -167,7 +182,7 @@ function updateRooms() {
   roomService.rooms.forEach((room) => {
     const previousUsers = [...room.users];
     const updatedUsers = room.users.filter((user) =>
-      webSocketAdapter.clients.has(user.id),
+      webSocketAdapter.clients.has(user.id)
     );
 
     if (arraysEqual(updatedUsers, previousUsers)) return;
@@ -177,4 +192,5 @@ function updateRooms() {
   });
 }
 
+setEventHandlers();
 setInterval(updateRooms, INTERVAL_ROOM_UPDATE);

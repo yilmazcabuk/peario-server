@@ -23,7 +23,7 @@ export default class WebSocketAdapter {
   constructor(
     server: https.Server,
     cleanInterval: number,
-    private userService: UserService,
+    private userService: UserService
   ) {
     this.webSocketServer = new WebSocket.Server({ server });
     this.setupConnectionHandler();

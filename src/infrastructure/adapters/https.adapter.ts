@@ -17,14 +17,14 @@ export default class HttpsAdapter extends Server {
       cert: readFileSync(serverSettings.PEM_CERT),
       key: readFileSync(serverSettings.PEM_KEY),
     };
-
-    this.create();
   }
 
-  private create() {
-    return createServer(this.serverOptions, (_, res) => {
+  public create() {
+    const server = createServer(this.serverOptions, (_, res) => {
       res.writeHead(200);
       res.end();
-    }).listen(this.serverSettings.PORT);
+    });
+    server.listen(this.serverSettings.PORT);
+    return server;
   }
 }

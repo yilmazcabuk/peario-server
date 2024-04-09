@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "npm run build && node .",
-    "serve": "tsc-watch --onSuccess \"dotenvx run -- node .\"",
+    "serve": "tsc-watch --onSuccess \"dotenvx run --debug -- node .\"",
     "build": "tsc",
     "test": "run-p -r start mocha",
     "mocha": "mocha"
