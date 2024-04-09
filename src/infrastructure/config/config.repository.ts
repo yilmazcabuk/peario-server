@@ -1,5 +1,3 @@
-import "dotenv/config";
-
 import type ConfigRepository from "./config.repository.interface";
 
 export default class ConfigRepositoryImpl implements ConfigRepository {

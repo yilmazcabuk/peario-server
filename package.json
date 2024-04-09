@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "npm run build && node .",
-    "serve": "tsc-watch --onSuccess \"node .\"",
+    "serve": "tsc-watch --onSuccess \"dotenvx run -- node .\"",
     "build": "tsc",
     "test": "run-p -r start mocha",
     "mocha": "mocha"
@@ -13,7 +13,7 @@
   "author": "tymmesyde",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^16.4.5",
+    "@dotenvx/dotenvx": "^0.31.1",
     "uuid": "^9.0.1",
     "winston": "^3.13.0",
     "ws": "^8.16.0"
