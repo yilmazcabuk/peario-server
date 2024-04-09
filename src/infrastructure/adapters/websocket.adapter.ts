@@ -83,8 +83,8 @@ export default class WebSocketAdapter {
   private setupCleanupInterval(cleanInterval: number) {
     const cleanInactiveClients = (client: User, clientId: string) => {
       const currentTime = Date.now();
-      const isInactive = currentTime - client.lastActive >= cleanInterval;
-      if (!isInactive) return;
+      const isActive = currentTime - client.lastActive < cleanInterval;
+      if (isActive) return;
       this.sockets.delete(clientId);
       this.clients.delete(clientId);
     };

@@ -1,6 +1,3 @@
-import { readFileSync } from "fs";
-import { createServer } from "https";
-
 import type {
   ClientDTO,
   JoinRoomDTO,
@@ -18,35 +15,22 @@ import {
   UserEvent,
 } from "./application/dtos/server";
 import { RoomService, UserService } from "./application/services";
-import WebSocketAdapter from "./infrastructure/adapters/websocket.adapter";
+import { HttpsAdapter, WebSocketAdapter } from "./infrastructure/adapters";
 import { ConfigRepositoryImpl, ConfigService } from "./infrastructure/config";
-import { LoggerController } from "./infrastructure/utilities/logger";
 import { UserRepositoryImpl } from "./persistence/repositories";
 
 const configRepository = new ConfigRepositoryImpl();
 const configService = new ConfigService(configRepository);
-const { settings } = configService;
 const userRepository = new UserRepositoryImpl();
 const userService = new UserService(userRepository);
 const roomService = new RoomService(userService);
-const logger = new LoggerController();
+const httpsAdapter = new HttpsAdapter(configService.server);
 
-const serverOptions = {
-  cert: readFileSync(settings.PEM_CERT),
-  key: readFileSync(settings.PEM_KEY),
-};
-
-const server = createServer(serverOptions, (_, res) => {
-  res.writeHead(200);
-  res.end();
-}).listen(settings.PORT);
-
-logger.notice(`Listening on port ${settings.PORT}`);
-
+const { INTERVAL_CLIENT_CHECK, INTERVAL_ROOM_UPDATE } = configService.intervals;
 const webSocketAdapter = new WebSocketAdapter(
-  server,
-  settings.INTERVAL_CLIENT_CHECK,
-  userService
+  httpsAdapter,
+  INTERVAL_CLIENT_CHECK,
+  userService,
 );
 
 async function updateUser({ client, payload }: UserUpdateDTO) {
@@ -118,7 +102,7 @@ function updateRoomOwnership({ client, payload }: UpdateOwnershipDTO) {
   if (!userId || room.owner !== client.id) return;
 
   const roomUser = room.users.find(
-    ({ id, roomId }) => id === userId && roomId === room.id
+    ({ id, roomId }) => id === userId && roomId === room.id,
   );
 
   if (!roomUser) {
@@ -132,7 +116,7 @@ function updateRoomOwnership({ client, payload }: UpdateOwnershipDTO) {
 
   webSocketAdapter.sendToRoomClients(
     updatedRoom.id,
-    new SyncEvent(updatedRoom)
+    new SyncEvent(updatedRoom),
   );
 }
 
@@ -183,7 +167,7 @@ function updateRooms() {
   roomService.rooms.forEach((room) => {
     const previousUsers = [...room.users];
     const updatedUsers = room.users.filter((user) =>
-      webSocketAdapter.clients.has(user.id)
+      webSocketAdapter.clients.has(user.id),
     );
 
     if (arraysEqual(updatedUsers, previousUsers)) return;
@@ -193,4 +177,4 @@ function updateRooms() {
   });
 }
 
-setInterval(updateRooms, settings.INTERVAL_ROOM_UPDATE);
+setInterval(updateRooms, INTERVAL_ROOM_UPDATE);
