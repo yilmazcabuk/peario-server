@@ -1,5 +1,3 @@
-import { config } from "dotenv";
-
 import WebSocket from "ws";
 
 import assert from "assert";
@@ -7,7 +5,6 @@ import assert from "assert";
 import waitOn from "wait-on";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-config();
 
 const { PORT } = process.env;
 const serverUrl = `wss://localhost:${PORT}`;

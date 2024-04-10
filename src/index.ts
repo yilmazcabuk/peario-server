@@ -30,12 +30,7 @@ const { INTERVAL_CLIENT_CHECK, INTERVAL_ROOM_UPDATE } = configService.intervals;
 function createServer(interval: number) {
   const httpsAdapter = new HttpsAdapter(configService.server);
   const httpsServer = httpsAdapter.create();
-  const webSocketAdapter = new WebSocketAdapter(
-    httpsServer,
-    interval,
-    userService
-  );
-  return webSocketAdapter;
+  return new WebSocketAdapter(httpsServer, interval, userService);
 }
 
 const webSocketAdapter = createServer(INTERVAL_CLIENT_CHECK);
@@ -109,7 +104,7 @@ function updateRoomOwnership({ client, payload }: UpdateOwnershipDTO) {
   if (!userId || room.owner !== client.id) return;
 
   const roomUser = room.users.find(
-    ({ id, roomId }) => id === userId && roomId === room.id
+    ({ id, roomId }) => id === userId && roomId === room.id,
   );
 
   if (!roomUser) {
@@ -123,7 +118,7 @@ function updateRoomOwnership({ client, payload }: UpdateOwnershipDTO) {
 
   webSocketAdapter.sendToRoomClients(
     updatedRoom.id,
-    new SyncEvent(updatedRoom)
+    new SyncEvent(updatedRoom),
   );
 }
 
@@ -182,7 +177,7 @@ function updateRooms() {
   roomService.rooms.forEach((room) => {
     const previousUsers = [...room.users];
     const updatedUsers = room.users.filter((user) =>
-      webSocketAdapter.clients.has(user.id)
+      webSocketAdapter.clients.has(user.id),
     );
 
     if (arraysEqual(updatedUsers, previousUsers)) return;
