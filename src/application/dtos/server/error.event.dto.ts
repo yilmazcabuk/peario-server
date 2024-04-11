@@ -7,7 +7,7 @@ export default class ErrorEvent implements ServerEvent {
     type: string;
   };
 
-  constructor(type: string) {
+  constructor(type: "room" | "user" | "cooldown") {
     this.payload = {
       type,
     };

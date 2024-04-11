@@ -23,7 +23,7 @@ export default class WebSocketAdapter {
   constructor(
     server: https.Server,
     cleanInterval: number,
-    private userService: UserService
+    private userService: UserService,
   ) {
     this.webSocketServer = new WebSocket.Server({ server });
     this.setupConnectionHandler();
@@ -77,7 +77,7 @@ export default class WebSocketAdapter {
     this.sendEvent(client, event);
     const onMessageCallback = (data: string) => this.handleEvents(client, data);
     this.onMessage(client, onMessageCallback);
-    this.clients.set(client.id, client);
+    this.clients.set(id, client);
   }
 
   private setupCleanupInterval(cleanInterval: number) {

@@ -9,7 +9,7 @@ interface Settings {
 }
 
 export default class HttpsAdapter extends Server {
-  private serverOptions: ServerOptions;
+  private readonly serverOptions: ServerOptions;
 
   constructor(private serverSettings: Settings) {
     super();
@@ -17,9 +17,10 @@ export default class HttpsAdapter extends Server {
       cert: readFileSync(serverSettings.PEM_CERT),
       key: readFileSync(serverSettings.PEM_KEY),
     };
+    this.create();
   }
 
-  public create() {
+  private create() {
     const server = createServer(this.serverOptions, (_, res) => {
       res.writeHead(200);
       res.end();
